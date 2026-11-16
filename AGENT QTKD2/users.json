@@ -1,0 +1,19 @@
+[
+  {
+    "username": "htd24307@gmail.com",
+    "display_name": "hà thuỳ dương",
+    "role": "admin",
+    "password_hash": "pbkdf2_sha256$14ebfca4c859544739560ec4bd6ed15a$2d1e7439aa43370de8f6bc924aff04fb2ac18f7fa043e1cfbd4022014f7a5efe",
+    "created_at": "2026-11-16T14:30:19+07:00",
+    "last_login_at": "2026-11-16T14:43:19+07:00"
+  },
+  {
+    "username": "tiengamingzzt2@gmail.com",
+    "display_name": "TIEN NGUYEN BAC VIET",
+    "phone": "0338690577",
+    "role": "user",
+    "password_hash": "pbkdf2_sha256$33c0008d44dff184520328286cac5d8a$b752741361ccb77e0733a05e28aee6de06695f3c426da5d60ee254b0b31dc446",
+    "created_at": "2026-11-16T14:42:50+07:00",
+    "last_login_at": "2026-11-16T14:43:21+07:00"
+  }
+]

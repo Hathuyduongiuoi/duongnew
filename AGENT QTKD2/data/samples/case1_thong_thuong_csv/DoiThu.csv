@@ -1,0 +1,5 @@
+﻿record_id,dia_ban,ten_doi_thu,thi_phan_uoc_tinh_pct,phan_khuc_muc_tieu,diem_manh,diem_yeu,muc_do_canh_tranh,nguon_du_lieu,ky_thong_ke
+DT-01,Bình Dương,KiotKho Pro,22,Chuỗi bán lẻ 5-20 điểm,Giá rẻ,Thiếu đồng bộ tồn kho thời gian thực đa kho,4.5,Khảo sát đối thủ BD,2025-Q4
+DT-02,Đà Nẵng,MisaWMS Retail,18,Siêu thị mini & FMCG,Tích hợp kế toán,Triển khai chậm khi mở nhiều chi nhánh,4.0,Khảo sát đối thủ ĐN,2025-Q4
+DT-03,Hải Phòng,Haravan Enterprise & FastKho,45,Chuỗi lớn & kho cảng,Có đội kỹ thuật trực tại Hải Phòng,Chi phí bản quyền cao,7.5,Khảo sát đối thủ HP,2025-Q4
+DT-04,Cần Thơ,AgriStock Local,30,Chuỗi nông sản & kho lạnh,Hỗ trợ cân điện tử & kho lạnh địa phương,Giao diện cũ,5.0,Khảo sát đối thủ CT,2025-Q4

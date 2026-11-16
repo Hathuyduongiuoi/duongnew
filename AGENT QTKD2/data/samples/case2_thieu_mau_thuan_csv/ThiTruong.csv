@@ -1,0 +1,6 @@
+﻿record_id,dia_ban,quy_mo_thi_truong_ty,so_chuoi_ban_le,toc_do_tang_truong_pct,ky_thong_ke,loai_ky,ngay_cong_bo,nguon_du_lieu,ma_nguon_goc,ghi_chu
+MT-01,Bình Dương,340,24,16.5,2025-Q4,annual_runrate,2025-11-01,Báo cáo Thị trường Bán lẻ Miền Nam 2025,SRC-SR-2025,Số liệu ước tính quy mô năm tại thời điểm Q4/2025
+MT-02,Đà Nẵng,290,20,15.0,2025-Q4,annual_runrate,2025-11-05,Báo cáo Hiệp hội Bán lẻ Việt Nam,SRC-VRA-2025,Nguồn chính thống
+MT-03,Đà Nẵng,145,11,8.0,2025-Q4,annual_runrate,2025-11-06,Ghi chép khảo sát sơ bộ chưa đối soát,SRC-DRAFT-DN,Chênh lệch 50% so với MT-02 trong cùng kỳ
+MT-03,Hải Phòng,380,28,18.0,2025-Q4,annual_runrate,2025-10-28,Báo cáo Retail Vietnam Insight 2025,SRC-RVN-2025,Báo cáo gốc
+MT-06,Nghệ An,195,12,10.5,2025-Q2,annual_runrate,2025-07-15,Báo cáo Thương mại Bắc Trung Bộ,SRC-BTB-2025,Kỳ thống kê cũ hơn (Q2/2025)

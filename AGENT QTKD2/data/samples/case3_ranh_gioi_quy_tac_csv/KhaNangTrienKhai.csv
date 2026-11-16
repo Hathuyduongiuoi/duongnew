@@ -1,0 +1,5 @@
+﻿record_id,dia_ban,nang_luc_ho_tro_tai_cho_toi_da,so_nhan_su_trien_khai_kha_dung,thoi_gian_di_chuyen_gio,sla_cam_ket_gio,diem_nang_luc_trien_khai,han_che_hien_tai,nguon_du_lieu,ngay_cap_nhat
+TK-01,Bình Dương,9.0,4,1.0,4,,Đáp ứng tốt,Phòng Triển khai,2025-11-05
+TK-02,Đà Nẵng,6.0,2,2.5,8,,Đúng sát trần năng lực tại chỗ (max=6.0 vs nhu cầu=6.0 -> điểm=6.00),Phòng Triển khai,2025-11-05
+TK-03,Hải Phòng,7.5,2,4.0,12,,Đủ năng lực triển khai nhưng sản phẩm thiếu module cảng,Phòng Triển khai,2025-11-05
+TK-04,Khánh Hòa,6.5,2,3.0,10,,Đủ năng lực hỗ trợ (max=6.5 vs nhu cầu=6.0 -> điểm=6.40),Phòng Triển khai,2025-11-05

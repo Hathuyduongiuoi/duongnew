@@ -1,0 +1,6 @@
+﻿solution_id,ten_giai_phap,tinh_nang_ho_tro,phan_khuc_phu_hop,muc_do_san_sang,yeu_cau_trien_khai_tai_cho,ghi_chu
+GP-01,Hưng Phát WMS Core,Quản lý tồn kho đa điểm; Quét mã vạch kiểm kê,Chuỗi bán lẻ 5-30 cửa hàng,Sẵn sàng,Trung bình,Triển khai chuẩn hóa từ xa + hỗ trợ onsite định kỳ
+GP-02,Hưng Phát Retail Sync Add-on,Đồng bộ POS bán hàng; Cảnh báo hạn sử dụng,"Siêu thị mini, mẹ bé, bách hóa",Sẵn sàng,Thấp,Kết nối API sẵn có với các hệ thống POS phổ biến
+GP-03,Module Hóa đơn Thuế Đặc thù,Tích hợp hóa đơn điện tử đặc thù,Bán lẻ đa ngành,Cần tùy chỉnh (3.0/10),Trung bình,"Đáp ứng mức cơ bản 3.0/10, cần phát triển bổ sung"
+GP-04,Module Hải quan Cảng,Kết nối hải quan cảng tự động,Logistics cảng,Cần tùy chỉnh sâu (2.9/10),Cao,Chưa hoàn thiện API kết nối cảng (2.9/10)
+GP-05,Module Báo cáo Du lịch & Chuỗi,Báo cáo đa tiền tệ du lịch,Bán lẻ khu du lịch,Cần tùy chỉnh nhẹ (6.0/10),Thấp,"Hỗ trợ sẵn mẫu cơ bản, tinh chỉnh nhẹ 6.0/10"

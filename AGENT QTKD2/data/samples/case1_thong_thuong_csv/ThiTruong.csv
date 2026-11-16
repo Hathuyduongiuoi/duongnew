@@ -1,0 +1,6 @@
+﻿record_id,dia_ban,quy_mo_thi_truong_ty,so_chuoi_ban_le,toc_do_tang_truong_pct,ky_thong_ke,loai_ky,ngay_cong_bo,nguon_du_lieu,ma_nguon_goc,ghi_chu
+MT-01,Bình Dương,340,24,16.5,2025-Q4,annual_runrate,2025-11-01,Báo cáo Thị trường Bán lẻ Miền Nam 2025,SRC-SR-2025,Số liệu ước tính quy mô năm tại thời điểm Q4/2025
+MT-02,Đà Nẵng,265,18,14.2,Q4/2025,annual_runrate,2025-11-05,Sở Công Thương & Hiệp hội Bán lẻ Miền Trung,SRC-SCT-DN-2025,Chuẩn hóa cùng kỳ Q4/2025
+MT-03,Hải Phòng,380,28,18.0,2025-Q4,annual_runrate,2025-10-28,Báo cáo Retail Vietnam Insight 2025,SRC-RVN-2025,Báo cáo gốc
+MT-04,Hải Phòng,380,28,18.0,Q4/2025,annual_runrate,2025-11-08,Tài liệu tóm tắt nội bộ (trích lại Retail Vietnam Insight),SRC-RVN-2025,Bản sao trích dẫn cùng nguồn gốc SRC-RVN-2025
+MT-05,Cần Thơ,52.5,15,11.0,2025-Q3,quarter_flow,2025-10-10,Niên giám Thương mại ĐBSCL,SRC-MKT-CT-2025,Số liệu luồng 1 quý (52.5 tỷ/quý -> quy đổi năm = 210 tỷ)

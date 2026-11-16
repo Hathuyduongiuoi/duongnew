@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard · Hà Thuỳ Dương (Data Analyst &amp; BI)</title>
+  <link rel="icon" type="image/jpeg" href="/avatar.jpg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #ffe2ef 0%, #fff0f6 50%, #ffebd9 100%);
+      color: #3f2d38;
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(18px);
+      border: 1.5px solid rgba(255, 255, 255, 0.92);
+      box-shadow: 0 20px 45px -16px rgba(236, 72, 153, 0.22);
+    }
+    .nav-item.active {
+      background: linear-gradient(90deg, #f472b6, #fb7185);
+      color: #fff;
+      box-shadow: 0 10px 22px -10px rgba(236, 72, 153, 0.55);
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6">
+
+  <!-- ADMIN LOGIN GATE (hiện khi chưa đăng nhập Admin) -->
+  <div id="adminLoginGate" class="max-w-md mx-auto mt-14 glass-card rounded-3xl p-7 text-center space-y-4">
+    <img src="/avatar.jpg" alt="Hà Thuỳ Dương" class="w-20 h-20 mx-auto rounded-full object-cover border-4 border-white shadow-lg" />
+    <div>
+      <span class="px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-[11px] font-extrabold">🔒 Khu vực Quản trị (/admin)</span>
+      <h1 class="text-xl font-extrabold text-slate-800 mt-2">Đăng nhập Admin Chủ sở hữu</h1>
+      <p class="text-xs text-slate-500 mt-1">Chỉ tài khoản Quản trị cấp cao (<strong>Hà Thuỳ Dương</strong>) mới được truy cập bảng điều khiển này.</p>
+    </div>
+    <form id="adminLoginForm" class="space-y-3 text-left text-xs">
+      <div>
+        <label class="block font-bold text-slate-600 mb-1">Tài khoản / Email / SĐT Admin</label>
+        <input id="admUser" type="text" required placeholder="hathuyduong2403 hoặc 0332125570"
+          class="w-full px-3.5 py-2.5 rounded-2xl bg-white border border-pink-200 font-semibold focus:outline-none focus:ring-2 focus:ring-pink-300" />
+      </div>
+      <div>
+        <label class="block font-bold text-slate-600 mb-1">Mật khẩu</label>
+        <input id="admPass" type="password" required placeholder="••••••••"
+          class="w-full px-3.5 py-2.5 rounded-2xl bg-white border border-pink-200 font-semibold focus:outline-none focus:ring-2 focus:ring-pink-300" />
+      </div>
+      <div id="admLoginErr" class="hidden p-2.5 rounded-xl bg-rose-50 text-rose-700 font-bold"></div>
+      <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-extrabold shadow-md hover:opacity-95">
+        Đăng nhập vào Admin Dashboard →
+      </button>
+    </form>
+    <a href="/" class="inline-block text-xs font-bold text-pink-600 hover:underline">← Quay về trang chủ người dùng</a>
+  </div>
+
+  <!-- ADMIN SHELL -->
+  <div id="adminAppShell" class="hidden max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
+    <!-- Sidebar -->
+    <aside class="glass-card rounded-3xl p-4 flex flex-col justify-between gap-4 h-fit lg:sticky lg:top-6">
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 p-2">
+          <img src="/avatar.jpg" alt="Admin" class="w-11 h-11 rounded-full object-cover border-2 border-white shadow" />
+          <div class="leading-tight">
+            <div class="font-extrabold text-sm text-slate-800" id="admProfileName">Hà Thuỳ Dương</div>
+            <div class="text-[11px] font-bold text-pink-600">Admin · Chủ sở hữu</div>
+          </div>
+        </div>
+        <nav class="space-y-1.5 text-xs font-extrabold">
+          <button type="button" onclick="switchSection('overview')" data-sec="overview" class="nav-item active w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-left transition">
+            <i class="fa-solid fa-chart-line w-4"></i><span>Tổng quan &amp; Biểu đồ</span>
+          </button>
+          <button type="button" onclick="switchSection('users')" data-sec="users" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-left text-slate-700 hover:bg-pink-50 transition">
+            <i class="fa-solid fa-users w-4"></i><span>Quản lý người dùng</span>
+          </button>
+          <button type="button" onclick="switchSection('activity')" data-sec="activity" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-left text-slate-700 hover:bg-pink-50 transition">
+            <i class="fa-solid fa-inbox w-4"></i><span>Liên hệ &amp; Hoạt động</span>
+          </button>
+          <button type="button" onclick="switchSection('settings')" data-sec="settings" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-left text-slate-700 hover:bg-pink-50 transition">
+            <i class="fa-solid fa-sliders w-4"></i><span>Cài đặt hệ thống</span>
+          </button>
+        </nav>
+      </div>
+      <div class="space-y-2 pt-3 border-t border-pink-100 text-xs font-bold">
+        <a href="/" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl bg-white border border-pink-200 text-pink-700 hover:bg-pink-50">
+          <i class="fa-solid fa-arrow-left"></i><span>Về giao diện người dùng</span>
+        </a>
+        <button type="button" onclick="adminLogout()" class="w-full py-2 rounded-2xl text-rose-600 hover:bg-rose-50">Đăng xuất Admin</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="space-y-5">
+      <!-- Top Bar -->
+      <div class="glass-card rounded-3xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-pink-950">📊 Bảng điều khiển Quản trị (Real-time Analytics)</h2>
+          <p class="text-[11px] text-slate-500 font-semibold">Theo dõi lưu lượng truy cập, tài khoản, phân tích dữ liệu và cấu hình website.</p>
+        </div>
+        <button type="button" onclick="loadAdminData()" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-extrabold shadow hover:opacity-95">
+          ↺ Cập nhật số liệu
+        </button>
+      </div>
+
+      <!-- SECTION: OVERVIEW & CHARTS -->
+      <section id="sec-overview" class="space-y-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+          <div class="glass-card rounded-3xl p-4">
+            <div class="text-[11px] font-bold text-slate-500">Tổng lượt truy cập</div>
+            <div id="kpiVisits" class="text-2xl font-black text-pink-600 mt-1">0</div>
+            <div id="kpiVisitsToday" class="text-[11px] font-bold text-emerald-600 mt-0.5">Hôm nay: 0</div>
+          </div>
+          <div class="glass-card rounded-3xl p-4">
+            <div class="text-[11px] font-bold text-slate-500">Khách duy nhất</div>
+            <div id="kpiUnique" class="text-2xl font-black text-slate-800 mt-1">0</div>
+            <div class="text-[11px] font-bold text-slate-400 mt-0.5">Theo thiết bị &amp; IP</div>
+          </div>
+          <div class="glass-card rounded-3xl p-4">
+            <div class="text-[11px] font-bold text-slate-500">Tài khoản đã tạo</div>
+            <div id="kpiUsers" class="text-2xl font-black text-orange-600 mt-1">0</div>
+            <div class="text-[11px] font-bold text-slate-400 mt-0.5">SĐT duy nhất</div>
+          </div>
+          <div class="glass-card rounded-3xl p-4">
+            <div class="text-[11px] font-bold text-slate-500">Phân tích · Chat AI</div>
+            <div id="kpiRunsChats" class="text-2xl font-black text-emerald-600 mt-1">0 · 0</div>
+            <div id="kpiContacts" class="text-[11px] font-bold text-pink-600 mt-0.5">Liên hệ: 0</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="glass-card rounded-3xl p-5 lg:col-span-2">
+            <h3 class="text-xs font-extrabold text-pink-900 mb-3">📈 Biểu đồ tăng trưởng 14 ngày gần nhất</h3>
+            <div class="h-64"><canvas id="growthChart"></canvas></div>
+          </div>
+          <div class="glass-card rounded-3xl p-5">
+            <h3 class="text-xs font-extrabold text-pink-900 mb-3">📱 Thiết bị &amp; Trang xem nhiều</h3>
+            <div class="h-44"><canvas id="deviceChart"></canvas></div>
+            <div id="topPathsBox" class="mt-3 space-y-1 text-[11px]"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: USERS -->
+      <section id="sec-users" class="hidden glass-card rounded-3xl p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-extrabold text-pink-900">👥 Quản lý tài khoản người dùng</h3>
+          <input id="userSearchInput" oninput="renderUsersTable()" type="text" placeholder="Tìm tên, username hoặc SĐT..."
+            class="px-3.5 py-1.5 rounded-2xl bg-white border border-pink-200 text-xs font-semibold w-64" />
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-pink-50 text-pink-900 font-extrabold">
+              <tr>
+                <th class="p-2.5">Tên hiển thị</th>
+                <th class="p-2.5">Tài khoản</th>
+                <th class="p-2.5">Số điện thoại</th>
+                <th class="p-2.5">Vai trò</th>
+                <th class="p-2.5">Phân tích / Chat</th>
+                <th class="p-2.5">Trạng thái</th>
+                <th class="p-2.5">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION: ACTIVITY & CONTACTS -->
+      <section id="sec-activity" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="glass-card rounded-3xl p-5 space-y-3">
+          <h3 class="text-sm font-extrabold text-pink-900">📩 Yêu cầu tư vấn gần đây</h3>
+          <div id="contactsListBox" class="space-y-2 text-xs max-h-96 overflow-y-auto"></div>
+        </div>
+        <div class="glass-card rounded-3xl p-5 space-y-3">
+          <h3 class="text-sm font-extrabold text-pink-900">🕒 Nhật ký hoạt động thời gian thực</h3>
+          <div id="activityListBox" class="space-y-1.5 text-[11px] max-h-96 overflow-y-auto"></div>
+        </div>
+      </section>
+
+      <!-- SECTION: SYSTEM SETTINGS -->
+      <section id="sec-settings" class="hidden glass-card rounded-3xl p-5 space-y-4 max-w-2xl">
+        <h3 class="text-sm font-extrabold text-pink-900">⚙️ Cài đặt hiển thị Website (Cập nhật trực tiếp ra giao diện người dùng)</h3>
+        <form id="settingsForm" class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Tiêu đề Website</label>
+            <input id="setSiteTitle" type="text" class="w-full px-3.5 py-2 rounded-2xl bg-white border border-pink-200 font-semibold" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Thanh thông báo nổi bật trên đầu trang (để trống nếu không hiện)</label>
+            <input id="setAnnouncement" type="text" placeholder="Ví dụ: 🎉 Đang mở ưu đãi phân tích dữ liệu doanh nghiệp!"
+              class="w-full px-3.5 py-2 rounded-2xl bg-white border border-pink-200 font-semibold" />
+          </div>
+          <label class="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
+            <input id="setMaintenance" type="checkbox" class="rounded text-pink-500" />
+            <span>Bật thông báo bảo trì hệ thống trên trang chính</span>
+          </label>
+          <div id="settingsSavedMsg" class="hidden p-2.5 rounded-xl bg-emerald-50 text-emerald-800 font-bold"></div>
+          <button type="submit" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-extrabold shadow">
+            Lưu &amp; Cập nhật ra Web ngay ✓
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let adminData = null;
+    let growthChartInst = null;
+    let deviceChartInst = null;
+    const esc = (s) => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    window.switchSection = (sec) => {
+      ["overview", "users", "activity", "settings"].forEach((k) => {
+        document.getElementById("sec-" + k)?.classList.toggle("hidden", k !== sec);
+      });
+      document.querySelectorAll(".nav-item").forEach((btn) => {
+        const active = btn.dataset.sec === sec;
+        btn.classList.toggle("active", active);
+        if (!active) btn.classList.add("text-slate-700");
+        else btn.classList.remove("text-slate-700");
+      });
+    };
+
+    async function loadAdminData() {
+      const resp = await fetch("/api/admin/stats");
+      if (!resp.ok) {
+        document.getElementById("adminLoginGate").classList.remove("hidden");
+        document.getElementById("adminAppShell").classList.add("hidden");
+        return;
+      }
+      adminData = await resp.json();
+      document.getElementById("adminLoginGate").classList.add("hidden");
+      document.getElementById("adminAppShell").classList.remove("hidden");
+
+      const s = adminData.summary || {};
+      document.getElementById("kpiVisits").textContent = s.total_visits || 0;
+      document.getElementById("kpiVisitsToday").textContent = `Hôm nay: ${s.visits_today || 0}`;
+      document.getElementById("kpiUnique").textContent = s.unique_visitors || 0;
+      document.getElementById("kpiUsers").textContent = s.registered_users || 0;
+      document.getElementById("kpiRunsChats").textContent = `${s.analysis_runs || 0} · ${s.chat_messages || 0}`;
+      document.getElementById("kpiContacts").textContent = `Liên hệ: ${s.contact_requests || 0}`;
+
+      renderCharts();
+      renderUsersTable();
+      renderActivity();
+
+      const setResp = await fetch("/api/site-settings");
+      if (setResp.ok) {
+        const st = await setResp.json();
+        document.getElementById("setSiteTitle").value = st.site_title || "";
+        document.getElementById("setAnnouncement").value = st.announcement_bar || "";
+        document.getElementById("setMaintenance").checked = Boolean(st.maintenance_mode);
+      }
+    }
+
+    function renderCharts() {
+      const series = adminData.daily_series || [];
+      const ctx1 = document.getElementById("growthChart").getContext("2d");
+      if (growthChartInst) growthChartInst.destroy();
+      growthChartInst = new Chart(ctx1, {
+        type: "line",
+        data: {
+          labels: series.map((d) => d.label),
+          datasets: [
+            { label: "Lượt truy cập", data: series.map((d) => d.visits), borderColor: "#ec4899", backgroundColor: "rgba(236,72,153,0.14)", fill: true, tension: 0.35 },
+            { label: "Phân tích dữ liệu", data: series.map((d) => d.runs), borderColor: "#f97316", tension: 0.35 },
+            { label: "Chat AI", data: series.map((d) => d.chats), borderColor: "#10b981", tension: 0.35 },
+            { label: "Người dùng mới", data: series.map((d) => d.new_users), borderColor: "#8b5cf6", tension: 0.35 },
+          ],
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 11 } } } } },
+      });
+
+      const devs = adminData.devices || {};
+      const ctx2 = document.getElementById("deviceChart").getContext("2d");
+      if (deviceChartInst) deviceChartInst.destroy();
+      deviceChartInst = new Chart(ctx2, {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(devs).length ? Object.keys(devs) : ["Chưa có dữ liệu"],
+          datasets: [{ data: Object.keys(devs).length ? Object.values(devs) : [1], backgroundColor: ["#f472b6", "#fb923c", "#34d399"] }],
+        },
+        options: { responsive: true, maintainAspectRatio: false },
+      });
+
+      document.getElementById("topPathsBox").innerHTML = (adminData.top_paths || [])
+        .map((p) => `<div class="flex justify-between py-1 border-b border-pink-50"><span>${esc(p.path)}</span><strong class="text-pink-700">${p.count}</strong></div>`)
+        .join("");
+    }
+
+    window.renderUsersTable = () => {
+      const q = (document.getElementById("userSearchInput")?.value || "").trim().toLowerCase();
+      const rows = (adminData?.users || []).filter((u) =>
+        !q || (u.display_name || "").toLowerCase().includes(q) || (u.username || "").toLowerCase().includes(q) || (u.phone || "").includes(q)
+      );
+      document.getElementById("usersTableBody").innerHTML = rows.map((u) => {
+        const isAdm = u.role === "admin";
+        const locked = Boolean(u.is_locked);
+        return `<tr class="border-t border-pink-100">
+          <td class="p-2.5 font-extrabold">${esc(u.display_name)}</td>
+          <td class="p-2.5 text-slate-600">${esc(u.username)}</td>
+          <td class="p-2.5 text-slate-600">${esc(u.phone || "—")}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isAdm ? "bg-emerald-100 text-emerald-800" : "bg-pink-100 text-pink-700"}">${isAdm ? "Admin" : "Thành viên"}</span></td>
+          <td class="p-2.5 font-bold">${u.runs_count || 0} / ${u.chats_count || 0}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${locked ? "bg-rose-100 text-rose-700" : "bg-emerald-50 text-emerald-700"}">${locked ? "Đã khóa" : "Hoạt động"}</span></td>
+          <td class="p-2.5">${isAdm ? "<span class='text-slate-400'>Chủ sở hữu</span>" : `<button onclick="toggleLock('${esc(u.username)}', ${!locked})" class="px-2.5 py-1 rounded-xl text-[11px] font-extrabold ${locked ? "bg-emerald-500 text-white" : "bg-rose-100 text-rose-700"}">${locked ? "Mở khóa" : "Khóa TK"}</button>`}</td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="7" class="p-4 text-center text-slate-400">Không có tài khoản nào.</td></tr>`;
+    };
+
+    window.toggleLock = async (username, locked) => {
+      const resp = await fetch("/api/admin/users/lock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, locked }),
+      });
+      if (resp.ok) await loadAdminData();
+    };
+
+    function renderActivity() {
+      const contacts = adminData.recent_contacts || [];
+      document.getElementById("contactsListBox").innerHTML = contacts.length
+        ? contacts.map((c) => `<div class="p-3 rounded-2xl bg-white border border-pink-100"><strong>${esc(c.name)}</strong> (${esc(c.contact)}) · <span class="text-pink-600">${esc(c.topic)}</span><div class="text-slate-600 mt-1">${esc(c.message)}</div></div>`).join("")
+        : `<div class="text-slate-400">Chưa có yêu cầu tư vấn.</div>`;
+      const acts = adminData.recent_activity || [];
+      document.getElementById("activityListBox").innerHTML = acts.length
+        ? acts.map((a) => `<div class="flex justify-between py-1.5 border-b border-pink-50"><span><strong>${esc(a.user)}</strong> · ${esc(a.type)} · ${esc(a.path)} (${esc(a.device)})</span><span class="text-slate-400">${esc((a.ts || "").slice(0, 16).replace("T", " "))}</span></div>`).join("")
+        : `<div class="text-slate-400">Chưa có hoạt động.</div>`;
+    }
+
+    document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("admLoginErr");
+      err.classList.add("hidden");
+      const resp = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: document.getElementById("admUser").value.trim(), password: document.getElementById("admPass").value }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || data.user?.role !== "admin") {
+        err.textContent = data.error || "Tài khoản này không có quyền Admin.";
+        err.classList.remove("hidden");
+        return;
+      }
+      document.getElementById("admProfileName").textContent = data.user.display_name || "Hà Thuỳ Dương";
+      await loadAdminData();
+    });
+
+    document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("settingsSavedMsg");
+      const resp = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          site_title: document.getElementById("setSiteTitle").value,
+          announcement_bar: document.getElementById("setAnnouncement").value,
+          maintenance_mode: document.getElementById("setMaintenance").checked,
+        }),
+      });
+      if (resp.ok) {
+        msg.textContent = "✅ Đã lưu cài đặt và đồng bộ ra trang chủ!";
+        msg.classList.remove("hidden");
+      }
+    });
+
+    window.adminLogout = async () => {
+      await fetch("/api/auth/logout", { method: "POST" });
+      location.reload();
+    };
+
+    (async () => {
+      const meResp = await fetch("/api/auth/me");
+      if (meResp.ok) {
+        const me = await meResp.json();
+        if (me.user?.role === "admin") {
+          document.getElementById("admProfileName").textContent = me.user.display_name || "Hà Thuỳ Dương";
+          await loadAdminData();
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

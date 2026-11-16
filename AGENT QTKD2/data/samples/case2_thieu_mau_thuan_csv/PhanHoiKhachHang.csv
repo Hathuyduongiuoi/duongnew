@@ -1,0 +1,5 @@
+﻿record_id,dia_ban,nhom_khach_hang,ten_khach_hang,so_cua_hang_kho,nhu_cau_tinh_nang,muc_do_quan_tam,yeu_cau_ho_tro_tai_cho,ngan_sach_du_kien_trieu,van_de_hien_tai,nguon_du_lieu,ngay_khao_sat
+KH-01,Bình Dương,Chuỗi siêu thị mini & Bách hóa (8-20 cửa hàng),Chuỗi Nam Việt Mart,14,Quản lý tồn kho đa điểm; Đồng bộ POS bán hàng; Cảnh báo hạn sử dụng,8.8,5.5,220,Lệch tồn kho giữa kho tổng và cửa hàng,Phỏng vấn khách hàng sơ bộ BD,2025-11-02
+KH-02,Đà Nẵng,Chuỗi bán lẻ tiêu dùng (5-12 cửa hàng),Chuỗi Sông Hàn Mart,8,Quản lý tồn kho đa điểm; Quét mã vạch kiểm kê,8.0,3.0,150,Cần triển khai nhanh qua cloud,Khảo sát trực tuyến,2025-11-04
+KH-03,Đà Nẵng,Chuỗi phân phối hàng tiêu dùng lớn,Chuỗi Central Hub,19,Quản lý tồn kho đa điểm; Đồng bộ POS bán hàng,8.5,9.0,240,Yêu cầu kỹ sư cắm chốt tại kho toàn thời gian,Phỏng vấn qua điện thoại,2025-11-06
+KH-04,Hải Phòng,Chuỗi kho lạnh cảng,Hải Phòng Cold Chain,12,Quản lý kho lạnh chuẩn GACP; Tích hợp cân điện tử công nghiệp,7.0,6.5,190,Thiếu giải pháp kho lạnh chuyên biệt,Phỏng vấn khách hàng HP,2025-11-04

@@ -1,0 +1,5 @@
+﻿record_id,dia_ban,nhom_khach_hang,ten_khach_hang,so_cua_hang_kho,nhu_cau_tinh_nang,muc_do_quan_tam,yeu_cau_ho_tro_tai_cho,ngan_sach_du_kien_trieu,van_de_hien_tai,nguon_du_lieu,ngay_khao_sat
+KH-01,Bình Dương,Chuỗi siêu thị mini & Bách hóa (8-20 cửa hàng),Chuỗi Nam Việt Mart,14,Quản lý tồn kho đa điểm; Đồng bộ POS bán hàng; Cảnh báo hạn sử dụng,8.8,5.5,220,Lệch tồn kho giữa kho tổng và cửa hàng,Phỏng vấn khách hàng sơ bộ BD,2025-11-02
+KH-02,Đà Nẵng,Chuỗi bán lẻ tổng hợp (10 cửa hàng),Chuỗi Đà Thành Retail,10,Quản lý tồn kho đa điểm; Tích hợp hóa đơn điện tử đặc thù,7.8,6.0,175,Yêu cầu đúng mức ranh giới Fit=6.00 (9.0 & 3.0) và hỗ trợ tại chỗ = 6.0,Khảo sát ĐN,2025-11-04
+KH-03,Hải Phòng,Chuỗi thương mại cảng (12 điểm),Chuỗi Cảng Biển Mart,12,Quản lý tồn kho đa điểm; Kết nối hải quan cảng tự động,8.4,5.0,210,Cần module cảng khiến Fit = (9.0 + 2.9)/2 = 5.95 < 6.0 (dưới ngưỡng đúng 0.05),Khảo sát HP,2025-11-04
+KH-04,Khánh Hòa,Chuỗi bán lẻ du lịch & tiện lợi (9 điểm),Chuỗi Biển Xanh Mart,9,Quản lý tồn kho đa điểm; Báo cáo đa tiền tệ du lịch,8.0,6.0,165,Cần quản lý kho chuẩn và báo cáo đa tiền tệ cơ bản (Fit = 7.5),Khảo sát KH,2025-11-04

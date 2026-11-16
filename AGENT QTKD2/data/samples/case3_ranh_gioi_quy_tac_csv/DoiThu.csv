@@ -1,0 +1,5 @@
+﻿record_id,dia_ban,ten_doi_thu,thi_phan_uoc_tinh_pct,phan_khuc_muc_tieu,diem_manh,diem_yeu,muc_do_canh_tranh,nguon_du_lieu,ky_thong_ke
+DT-01,Bình Dương,KiotKho Pro,22,Chuỗi bán lẻ,Giá rẻ,Thiếu đa kho,4.0,Khảo sát đối thủ,2025-Q4
+DT-02,Đà Nẵng,MisaWMS Retail,20,Siêu thị mini,Kế toán tốt,Chậm mở rộng,2.5,Khảo sát đối thủ,2025-Q4
+DT-03,Hải Phòng,FastKho,25,Chuỗi vật tư,Có đội Bắc,Giá cao,4.5,Khảo sát đối thủ,2025-Q4
+DT-04,Khánh Hòa,NhaTrangPOS,15,Cửa hàng du lịch & bán lẻ,Quen địa bàn,Không quản lý tồn kho sâu,4.6,Khảo sát đối thủ,2025-Q4

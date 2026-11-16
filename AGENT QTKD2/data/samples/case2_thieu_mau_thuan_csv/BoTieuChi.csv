@@ -1,0 +1,5 @@
+﻿criterion_id,ten_tieu_chi,ma_nhom,trong_so_pct,nguong_toi_thieu,quy_tac_bat_buoc,bien_ranh_gioi,mo_ta_quy_tac
+TC-01,Quy mô & Tiềm năng thị trường,market_size,25,,FALSE,0.25,Chuẩn hóa 10 * (Quy mô địa bàn / Quy mô lớn nhất) sau khi khử trùng lặp nguồn.
+TC-02,Mức độ khớp nhu cầu sản phẩm (Product-Market Fit),product_fit,30,6.0,TRUE,0.25,Đối chiếu tính năng khách hàng yêu cầu với Danh mục giải pháp. Bắt buộc >= 6.0.
+TC-03,Khả năng triển khai & Hỗ trợ tại chỗ,deployment_capability,30,6.0,TRUE,0.25,Yêu cầu hỗ trợ tại chỗ không vượt quá năng lực tối đa; điểm năng lực >= 6.0.
+TC-04,Mức độ thuận lợi cạnh tranh,competition,15,,FALSE,0.25,Điểm thuận lợi = 10 - Áp lực cạnh tranh trung bình.

@@ -1,0 +1,65 @@
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-A24532"}}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-1BAACC"}}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-6D74E8"}}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-B615C4"}}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-B615C4"}}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-E69226"}}
+{"ts": "2026-11-16T14:28:17+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-142817-E69226-R2"}}
+{"ts": "2026-11-16T14:28:46+07:00", "date": "2026-11-16", "type": "page_view", "path": "/ket-qua", "device": "Desktop", "visitor": "8361361a9633", "user": "guest"}
+{"ts": "2026-11-16T14:29:05+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "8361361a9633", "user": "guest", "extra": {"run_id": "HP-20261116-142858-2541D4"}}
+{"ts": "2026-11-16T14:29:54+07:00", "date": "2026-11-16", "type": "page_view", "path": "/hathuyduong2403", "device": "Desktop", "visitor": "8361361a9633", "user": "guest"}
+{"ts": "2026-11-16T14:30:19+07:00", "date": "2026-11-16", "type": "register", "path": "/api/auth/register", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:36:10+07:00", "date": "2026-11-16", "type": "login", "path": "/api/auth/login", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-CC502B"}}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-A108A6"}}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-D83EB9"}}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-FF9182"}}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-FF9182"}}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-0A2580"}}
+{"ts": "2026-11-16T14:36:33+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143633-0A2580-R2"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-224800"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-B755AB"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-061C19"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-611C23"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-611C23"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-04BCCD"}}
+{"ts": "2026-11-16T14:38:30+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-143830-04BCCD-R2"}}
+{"ts": "2026-11-16T14:40:45+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:40:55+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "8361361a9633", "user": "guest"}
+{"ts": "2026-11-16T14:40:56+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "8361361a9633", "user": "guest"}
+{"ts": "2026-11-16T14:41:05+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "f2b0285a61e7", "user": "guest"}
+{"ts": "2026-11-16T14:41:28+07:00", "date": "2026-11-16", "type": "login", "path": "/api/auth/login", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:41:45+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "50ba7c8f9c3a", "user": "guest"}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-E121C9"}}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-596EBC"}}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-ABA3FC"}}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-23EE70"}}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-23EE70"}}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-E6E96E"}}
+{"ts": "2026-11-16T14:42:19+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-144219-E6E96E-R2"}}
+{"ts": "2026-11-16T14:42:50+07:00", "date": "2026-11-16", "type": "register", "path": "/api/auth/register", "device": "Desktop", "visitor": "50ba7c8f9c3a", "user": "tiengamingzzt2@gmail.com"}
+{"ts": "2026-11-16T14:42:51+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:43:19+07:00", "date": "2026-11-16", "type": "login", "path": "/api/auth/login", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:43:20+07:00", "date": "2026-11-16", "type": "login", "path": "/api/auth/login", "device": "Desktop", "visitor": "8361361a9633", "user": "htd24307@gmail.com"}
+{"ts": "2026-11-16T14:43:22+07:00", "date": "2026-11-16", "type": "login", "path": "/api/auth/login", "device": "Desktop", "visitor": "50ba7c8f9c3a", "user": "tiengamingzzt2@gmail.com"}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-B85E31"}}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-32FD44"}}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-AA1921"}}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-D992A0"}}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-D992A0"}}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-891F45"}}
+{"ts": "2026-11-16T14:53:14+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145314-891F45-R2"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-820741"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-88BA34"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-A5016D"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-E11CD5"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-E11CD5"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-AD4496"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "analysis_run", "path": "/api/run", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest", "extra": {"run_id": "HP-20261116-145801-AD4496-R2"}}
+{"ts": "2026-11-16T14:58:01+07:00", "date": "2026-11-16", "type": "page_view", "path": "/", "device": "Desktop", "visitor": "b07a760ab580", "user": "guest"}

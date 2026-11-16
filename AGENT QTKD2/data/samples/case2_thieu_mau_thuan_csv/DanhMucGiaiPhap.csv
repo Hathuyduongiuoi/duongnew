@@ -1,0 +1,4 @@
+﻿solution_id,ten_giai_phap,tinh_nang_ho_tro,phan_khuc_phu_hop,muc_do_san_sang,yeu_cau_trien_khai_tai_cho,ghi_chu
+GP-01,Hưng Phát WMS Core,Quản lý tồn kho đa điểm; Quét mã vạch kiểm kê,Chuỗi bán lẻ 5-30 cửa hàng,Sẵn sàng,Trung bình,Triển khai chuẩn hóa từ xa + hỗ trợ onsite định kỳ
+GP-02,Hưng Phát Retail Sync Add-on,Đồng bộ POS bán hàng; Cảnh báo hạn sử dụng,"Siêu thị mini, mẹ bé, bách hóa",Sẵn sàng,Thấp,Kết nối API sẵn có với các hệ thống POS phổ biến
+GP-03,Module Kho lạnh & Cân công nghiệp,Quản lý kho lạnh chuẩn GACP; Tích hợp cân điện tử công nghiệp,"Nông sản, thủy sản",Chưa hỗ trợ,Cao,Chưa nằm trong lộ trình sản phẩm năm nay
