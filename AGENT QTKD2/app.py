@@ -70,11 +70,63 @@ from agent.skills.skill_evaluate_rank import DEFAULT_CRITERIA
 ROOT_DIR = Path(__file__).resolve().parent
 WEB_DIR = ROOT_DIR / "web"
 SAMPLES_DIR = ROOT_DIR / "data" / "samples"
-_RUNTIME_DIR = Path("/tmp/htd_runtime") if os.environ.get("VERCEL") else ROOT_DIR
-AUDIT_DIR = _RUNTIME_DIR / "audit_logs"
+_RUNTIME_DIR = Path("/tmp/htd_runtime") if os.environ.get("VERCEL") else (ROOT_DIR / ".htd_data")
+_RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+AUDIT_DIR = (Path("/tmp/htd_runtime") / "audit_logs") if os.environ.get("VERCEL") else (ROOT_DIR / "audit_logs")
 AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+SESSION_CACHE_DIR = Path("/tmp/htd_sessions")
+SESSION_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+if (ROOT_DIR / "contact_requests.jsonl").is_file() and not (_RUNTIME_DIR / "contact_requests.jsonl").is_file():
+    try:
+        (ROOT_DIR / "contact_requests.jsonl").replace(_RUNTIME_DIR / "contact_requests.jsonl")
+    except Exception:
+        pass
 CONTACT_FILE = _RUNTIME_DIR / "contact_requests.jsonl"
 _CONTACT_LOCK = threading.Lock()
+
+
+def _prune_old_audit_files(keep: int = 5) -> None:
+    """Keep audit_logs/ compact so local workspace stays cleanly under 100 files."""
+    try:
+        jsons = sorted(AUDIT_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for old in jsons[keep:]:
+            old.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+
+def _save_run_session(run_id: str) -> None:
+    if not run_id or run_id not in ORCHESTRATOR.sessions:
+        return
+    sess = ORCHESTRATOR.sessions[run_id]
+    snap = {
+        "last_response": sess.get("last_response") or {},
+        "cleaned_sheets": sess.get("cleaned_sheets") or {},
+        "raw_sheets": sess.get("raw_sheets") or {},
+    }
+    try:
+        (SESSION_CACHE_DIR / f"{run_id}.session.json").write_text(
+            json.dumps(snap, ensure_ascii=False, default=str),
+            encoding="utf-8",
+        )
+        _prune_old_audit_files(5)
+    except Exception:
+        pass
+
+
+def _get_run_session(run_id: str) -> Optional[Dict[str, Any]]:
+    if run_id in ORCHESTRATOR.sessions:
+        return ORCHESTRATOR.sessions[run_id]
+    snap_path = SESSION_CACHE_DIR / f"{run_id}.session.json"
+    if snap_path.is_file():
+        try:
+            sess = json.loads(snap_path.read_text(encoding="utf-8"))
+            if isinstance(sess, dict):
+                ORCHESTRATOR.sessions[run_id] = sess
+                return sess
+        except Exception:
+            pass
+    return None
 
 # Clean, keyword-rich URLs served by the single-page shell (index.html)
 SPA_ROUTES = {
@@ -410,11 +462,29 @@ def load_inputs_from_sources(
             )
         if s_map:
             merge_sheets({k: v for k, v in s_map.items() if v}, fname, ext)
+        elif d_map:
+            # Synthesize a structured table from readable document paragraphs so all 4 studio steps work seamlessly
+            syn_sheets: Dict[str, List[Dict[str, Any]]] = {}
+            for d_name, paras in d_map.items():
+                if not paras:
+                    continue
+                s_key = f"{Path(d_name).stem}_NoiDung"
+                syn_sheets[s_key] = [
+                    {
+                        "_row_number": idx + 1,
+                        "_source_file": fname,
+                        "_sheet_name": s_key,
+                        "Dong": idx + 1,
+                        "Noi_Dung": ln,
+                    }
+                    for idx, ln in enumerate(paras)
+                    if str(ln).strip()
+                ]
+            if syn_sheets:
+                merge_sheets(syn_sheets, fname, f"{ext}_text")
         if document_texts_out is not None and d_map:
             for d_name, paras in d_map.items():
                 document_texts_out[d_name] = paras
-                if not s_map:
-                    source_meta.append({"source": d_name, "type": f"{ext}_text", "sheet_name": Path(d_name).stem, "rows": len(paras)})
 
     for url in google_sheet_urls:
         clean_url = url.strip()
@@ -453,10 +523,66 @@ def load_inputs_from_sources(
     return raw_sheets, source_meta
 
 
+def _render_md_to_clean_html(md_raw: str) -> str:
+    """Convert Markdown report cleanly into Vietnamese-typed editorial HTML (no raw ## or ** tokens)."""
+    lines = str(md_raw or "").splitlines()
+    out: List[str] = []
+    in_list = False
+    in_table = False
+
+    def close_blocks() -> None:
+        nonlocal in_list, in_table
+        if in_list:
+            out.append("</ul>")
+            in_list = False
+        if in_table:
+            out.append("</tbody></table>")
+            in_table = False
+
+    def fmt_inline(txt: str) -> str:
+        s = html_lib.escape(txt)
+        s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
+        s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+        return s
+
+    for raw in lines:
+        ln = raw.strip()
+        if not ln:
+            close_blocks()
+            continue
+        if ln.startswith("|") and ln.endswith("|"):
+            if not ln.replace("|", "").replace("-", "").replace(":", "").strip():
+                continue
+            cells = [fmt_inline(c.strip()) for c in ln.split("|")[1:-1]]
+            if not in_table:
+                close_blocks()
+                out.append("<table><thead><tr>" + "".join(f"<th>{c}</th>" for c in cells) + "</tr></thead><tbody>")
+                in_table = True
+            else:
+                out.append("<tr>" + "".join(f"<td>{c}</td>" for c in cells) + "</tr>")
+            continue
+        close_blocks()
+        if ln.startswith("### "):
+            out.append(f"<h3>{fmt_inline(ln[4:])}</h3>")
+        elif ln.startswith("## "):
+            out.append(f"<h2>{fmt_inline(ln[3:])}</h2>")
+        elif ln.startswith("# "):
+            out.append(f"<h1>{fmt_inline(ln[2:])}</h1>")
+        elif ln.startswith("- "):
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(f"<li>{fmt_inline(ln[2:])}</li>")
+        else:
+            out.append(f"<p>{fmt_inline(ln)}</p>")
+    close_blocks()
+    return "\n".join(out)
+
+
 def render_standalone_html_report(res: Dict[str, Any]) -> str:
     """Build a standalone frosted-pastel HTML report & dashboard export (Xuất HTML)."""
     prop = res.get("proposal") or {}
-    md_text = html_lib.escape(prop.get("markdown_report") or "")
+    md_html = _render_md_to_clean_html(prop.get("markdown_report") or "")
     run_id = html_lib.escape(str(res.get("run_id") or ""))
     status_txt = html_lib.escape(str(res.get("workflow_status") or ""))
 
@@ -488,20 +614,23 @@ def render_standalone_html_report(res: Dict[str, Any]) -> str:
         )
         return f"""<!DOCTYPE html>
 <html lang="vi"><head><meta charset="UTF-8" /><title>{domain_lbl} ({run_id})</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  body {{ font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", sans-serif; margin: 0; padding: 32px; background: linear-gradient(135deg, #ffd6e7 0%, #ffe8ee 50%, #ffe2d1 100%); color: #3f2d38; }}
-  .wrap {{ max-width: 1020px; margin: 0 auto; background: rgba(255,255,255,0.82); border: 1.5px solid #fff; border-radius: 28px; padding: 28px; box-shadow: 0 24px 60px -16px rgba(236,72,153,.24); }}
-  h1 {{ margin: 0 0 6px; color: #be185d; font-size: 22px; }}
+  body {{ font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; margin: 0; padding: 32px; background: linear-gradient(135deg, #ffd6e7 0%, #ffe8ee 50%, #ffe2d1 100%); color: #3f2d38; line-height: 1.7; }}
+  .wrap {{ max-width: 1020px; margin: 0 auto; background: rgba(255,255,255,0.88); border: 1.5px solid #fff; border-radius: 28px; padding: 30px; box-shadow: 0 24px 60px -16px rgba(236,72,153,.24); }}
+  h1 {{ margin: 0 0 8px; color: #be185d; font-size: 22px; }}
+  h2 {{ color: #9d174d; font-size: 16px; margin-top: 22px; padding: 6px 12px; border-left: 4px solid #ec4899; background: #fff1f6; border-radius: 0 12px 12px 0; }}
   .kpis {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }}
-  .card {{ background: rgba(255,255,255,0.88); border: 1.5px solid #fbcfe8; border-radius: 20px; padding: 16px; }}
-  .card ul {{ padding-left: 18px; margin: 8px 0 0; font-size: 12px; }}
-  table {{ width: 100%; border-collapse: collapse; margin: 12px 0 24px; background: #fff; border-radius: 16px; overflow: hidden; font-size: 12px; }}
+  .card {{ background: rgba(255,255,255,0.92); border: 1.5px solid #fbcfe8; border-radius: 20px; padding: 16px; }}
+  .card ul {{ padding-left: 18px; margin: 8px 0 0; font-size: 13px; }}
+  table {{ width: 100%; border-collapse: collapse; margin: 12px 0 24px; background: #fff; border-radius: 16px; overflow: hidden; font-size: 12.5px; }}
   th, td {{ padding: 10px 12px; border-bottom: 1px solid #fce7f3; text-align: left; }}
-  th {{ background: #fff1f6; color: #9d174d; font-weight: 800; }}
-  pre {{ white-space: pre-wrap; font-family: inherit; font-size: 12.5px; line-height: 1.6; background: #fff; padding: 18px; border-radius: 18px; border: 1.5px solid #fbcfe8; }}
+  th {{ background: linear-gradient(90deg, #fce7f3, #ffedd5); color: #9d174d; font-weight: 800; }}
+  code {{ font-family: inherit; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }}
+  .report-box {{ background: #fff; padding: 20px 24px; border-radius: 20px; border: 1.5px solid #fbcfe8; font-size: 13.5px; }}
 </style></head>
 <body><div class="wrap">
-  <h1>📊 Hà Thuỳ Dương · Chuyên viên Data Analyst &amp; BI · {domain_lbl}</h1>
+  <h1>🌸 Hà Thuỳ Dương · Chuyên viên Data Analyst &amp; BI · {domain_lbl}</h1>
   <div class="kpis">
     <div class="card"><div>Số bảng nguồn</div><h2>{cs.get('total_tables', 0)} bảng</h2></div>
     <div class="card"><div>Tổng dòng sạch</div><h2>{cs.get('total_rows_clean', 0)} dòng</h2></div>
@@ -512,7 +641,7 @@ def render_standalone_html_report(res: Dict[str, Any]) -> str:
   <h2>📈 Thống kê chỉ số định lượng</h2>
   <table><thead><tr><th>Bảng</th><th>Chỉ tiêu</th><th>Số dòng</th><th>Tổng</th><th>Trung bình</th><th>Nhỏ nhất</th><th>Lớn nhất</th></tr></thead><tbody>{num_rows or '<tr><td colspan="7">Không có cột số định lượng.</td></tr>'}</tbody></table>
   <h2>📄 Báo cáo chi tiết</h2>
-  <pre>{md_text}</pre>
+  <div class="report-box">{md_html}</div>
 </div></body></html>"""
 
     ev = res.get("evaluation") or {}
@@ -520,7 +649,7 @@ def render_standalone_html_report(res: Dict[str, Any]) -> str:
     selected = [x for x in evals if x.get("overall_status") == "SELECTED"]
     prop = res.get("proposal") or {}
     survey_plan = prop.get("survey_plan") or []
-    md_text = html_lib.escape(prop.get("markdown_report") or "")
+    md_html = _render_md_to_clean_html(prop.get("markdown_report") or "")
     run_id = html_lib.escape(str(res.get("run_id") or ""))
     status_txt = html_lib.escape(str(res.get("workflow_status") or ""))
 
@@ -562,19 +691,22 @@ def render_standalone_html_report(res: Dict[str, Any]) -> str:
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Hà Thuỳ Dương · Data Analyst &amp; BI · Báo cáo &amp; Dashboard ({run_id})</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  body {{ font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Segoe UI", sans-serif; margin: 0; padding: 32px; background: linear-gradient(135deg, #ffd6e7 0%, #ffe8ee 50%, #ffe2d1 100%); color: #3f2d38; }}
-  .wrap {{ max-width: 1020px; margin: 0 auto; background: rgba(255,255,255,0.78); backdrop-filter: blur(18px); border: 1.5px solid #fff; border-radius: 28px; padding: 28px; box-shadow: 0 24px 60px -16px rgba(236,72,153,.24); }}
+  body {{ font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; margin: 0; padding: 32px; background: linear-gradient(135deg, #ffd6e7 0%, #ffe8ee 50%, #ffe2d1 100%); color: #3f2d38; line-height: 1.7; }}
+  .wrap {{ max-width: 1020px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(18px); border: 1.5px solid #fff; border-radius: 28px; padding: 30px; box-shadow: 0 24px 60px -16px rgba(236,72,153,.24); }}
   h1 {{ margin: 0 0 6px; color: #be185d; font-size: 22px; }}
-  .meta {{ font-size: 12px; color: #7c4d63; margin-bottom: 20px; }}
+  h2 {{ color: #9d174d; font-size: 16px; margin-top: 22px; padding: 6px 12px; border-left: 4px solid #ec4899; background: #fff1f6; border-radius: 0 12px 12px 0; }}
+  .meta {{ font-size: 12.5px; color: #7c4d63; margin-bottom: 20px; }}
   .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }}
-  .card {{ background: rgba(255,255,255,0.85); border: 1.5px solid #fbcfe8; border-radius: 20px; padding: 18px; box-shadow: 0 12px 26px -12px rgba(236,72,153,.22); }}
+  .card {{ background: rgba(255,255,255,0.9); border: 1.5px solid #fbcfe8; border-radius: 20px; padding: 18px; box-shadow: 0 12px 26px -12px rgba(236,72,153,.22); }}
   .card.top {{ background: linear-gradient(135deg, #fff5f9, #fff7ed); }}
   .tag {{ display: inline-block; padding: 4px 10px; border-radius: 999px; background: #fce7f3; color: #be185d; font-weight: 800; font-size: 11px; margin-bottom: 8px; }}
-  table {{ width: 100%; border-collapse: collapse; margin: 12px 0 24px; background: rgba(255,255,255,0.82); border-radius: 16px; overflow: hidden; font-size: 12px; }}
+  table {{ width: 100%; border-collapse: collapse; margin: 12px 0 24px; background: rgba(255,255,255,0.92); border-radius: 16px; overflow: hidden; font-size: 12.5px; }}
   th, td {{ padding: 10px 12px; border-bottom: 1px solid #fce7f3; text-align: left; vertical-align: top; }}
-  th {{ background: #fff1f6; color: #9d174d; font-weight: 800; }}
-  pre {{ white-space: pre-wrap; font-family: inherit; font-size: 12.5px; line-height: 1.6; background: rgba(255,255,255,0.82); padding: 18px; border-radius: 18px; border: 1.5px solid #fbcfe8; }}
+  th {{ background: linear-gradient(90deg, #fce7f3, #ffedd5); color: #9d174d; font-weight: 800; }}
+  code {{ font-family: inherit; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }}
+  .report-box {{ background: rgba(255,255,255,0.92); padding: 20px 24px; border-radius: 20px; border: 1.5px solid #fbcfe8; font-size: 13.5px; }}
 </style>
 </head>
 <body>
@@ -587,7 +719,7 @@ def render_standalone_html_report(res: Dict[str, Any]) -> str:
     <h2>📋 Kế Hoạch Khảo Sát (Go / No-Go)</h2>
     <table><thead><tr><th>Địa bàn</th><th>Nhóm khách hàng</th><th>Cần xác minh</th><th>Tiêu chí Go / No-Go</th><th>Phụ trách</th></tr></thead><tbody>{survey_html or '<tr><td colspan="5">Chưa có kế hoạch.</td></tr>'}</tbody></table>
     <h2>📄 Báo Cáo Chi Tiết (BC)</h2>
-    <pre>{md_text}</pre>
+    <div class="report-box">{md_html}</div>
   </div>
 </body>
 </html>"""
@@ -726,8 +858,9 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
                         download_name=f"{run_id}_audit.json",
                     )
                     return
-                if run_id in ORCHESTRATOR.sessions:
-                    audit_data = ORCHESTRATOR.sessions[run_id]["last_response"]["audit"]
+                sess = _get_run_session(run_id)
+                if sess:
+                    audit_data = (sess.get("last_response") or {}).get("audit") or {}
                     self._send_bytes(
                         json.dumps(audit_data, ensure_ascii=False, indent=2).encode("utf-8"),
                         "application/json; charset=utf-8",
@@ -739,8 +872,9 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
 
             if path.startswith("/api/runs/") and path.endswith("/report.md"):
                 run_id = path.strip("/").split("/")[2]
-                if run_id in ORCHESTRATOR.sessions:
-                    proposal = ORCHESTRATOR.sessions[run_id]["last_response"].get("proposal") or {}
+                sess = _get_run_session(run_id)
+                if sess:
+                    proposal = (sess.get("last_response") or {}).get("proposal") or {}
                     md = proposal.get("markdown_report") or "# Chưa có báo cáo hoàn chỉnh (Phiên đang chờ HITL)."
                     self._send_bytes(
                         md.encode("utf-8"),
@@ -753,8 +887,9 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
 
             if path.startswith("/api/runs/") and path.endswith("/report.html"):
                 run_id = path.strip("/").split("/")[2]
-                if run_id in ORCHESTRATOR.sessions:
-                    html_out = render_standalone_html_report(ORCHESTRATOR.sessions[run_id]["last_response"])
+                sess = _get_run_session(run_id)
+                if sess:
+                    html_out = render_standalone_html_report(sess["last_response"])
                     self._send_bytes(
                         html_out.encode("utf-8"),
                         "text/html; charset=utf-8",
@@ -766,8 +901,8 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
 
             if path.startswith("/api/runs/") and path.endswith("/cleaned.xlsx"):
                 run_id = path.strip("/").split("/")[2]
-                if run_id in ORCHESTRATOR.sessions:
-                    sess = ORCHESTRATOR.sessions[run_id]
+                sess = _get_run_session(run_id)
+                if sess:
                     xlsx_bytes = export_cleaned_excel_bytes(
                         sess["last_response"],
                         sess.get("cleaned_sheets") or sess.get("raw_sheets") or {},
@@ -783,8 +918,8 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
 
             if path.startswith("/api/runs/") and path.endswith("/analysis.xlsx"):
                 run_id = path.strip("/").split("/")[2]
-                if run_id in ORCHESTRATOR.sessions:
-                    sess = ORCHESTRATOR.sessions[run_id]
+                sess = _get_run_session(run_id)
+                if sess:
                     xlsx_bytes = export_analysis_excel_bytes(sess["last_response"])
                     self._send_bytes(
                         xlsx_bytes,
@@ -797,8 +932,8 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
 
             if path.startswith("/api/runs/") and path.endswith("/report.docx"):
                 run_id = path.strip("/").split("/")[2]
-                if run_id in ORCHESTRATOR.sessions:
-                    sess = ORCHESTRATOR.sessions[run_id]
+                sess = _get_run_session(run_id)
+                if sess:
                     docx_bytes = export_report_docx_bytes(sess["last_response"])
                     self._send_bytes(
                         docx_bytes,
@@ -1091,6 +1226,7 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
                     human_resolutions=payload.get("human_resolutions") or {},
                     document_texts=doc_texts,
                 )
+                _save_run_session(str(result.get("run_id") or ""))
                 u = self._current_user()
                 log_analytics_event("analysis_run", path="/api/run", user_agent=self.headers.get("User-Agent") or "", ip=self.client_address[0] if self.client_address else "", username=u["username"] if u else "guest", extra={"run_id": result.get("run_id")})
                 self._send_json(result)
@@ -1116,6 +1252,7 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
                     human_resolutions=payload.get("human_resolutions") or {},
                     extra_sheets=extra_sheets,
                 )
+                _save_run_session(str(result.get("run_id") or ""))
                 u = self._current_user()
                 log_analytics_event("analysis_run", path="/api/run", user_agent=self.headers.get("User-Agent") or "", ip=self.client_address[0] if self.client_address else "", username=u["username"] if u else "guest", extra={"run_id": result.get("run_id")})
                 self._send_json(result)
@@ -1132,6 +1269,7 @@ class AgentHTTPHandler(BaseHTTPRequestHandler):
                     chosen_locations=chosen,
                     note=note,
                 )
+                _save_run_session(str(result.get("run_id") or ""))
                 u = self._current_user()
                 log_analytics_event("analysis_run", path="/api/run", user_agent=self.headers.get("User-Agent") or "", ip=self.client_address[0] if self.client_address else "", username=u["username"] if u else "guest", extra={"run_id": result.get("run_id")})
                 self._send_json(result)
@@ -1161,60 +1299,73 @@ handler = AgentHTTPHandler
 
 def app(environ: Dict[str, Any], start_response: Any) -> List[bytes]:
     """Zero-dependency WSGI adapter around AgentHTTPHandler for Vercel Python framework."""
-    import email.message
+    import http.client
     import io
 
-    class _WSGIHandler(AgentHTTPHandler):
-        def __init__(self) -> None:
-            self.command = environ.get("REQUEST_METHOD", "GET").upper()
-            qs = environ.get("QUERY_STRING", "")
-            path_info = environ.get("PATH_INFO", "/") or "/"
-            self.path = f"{path_info}?{qs}" if qs else path_info
-            self.request_version = environ.get("SERVER_PROTOCOL", "HTTP/1.1")
-            self.client_address = (environ.get("REMOTE_ADDR", "127.0.0.1"), 0)
-
-            hdrs = email.message.EmailMessage()
-            if environ.get("CONTENT_TYPE"):
-                hdrs["Content-Type"] = environ["CONTENT_TYPE"]
-            if environ.get("CONTENT_LENGTH"):
-                hdrs["Content-Length"] = environ["CONTENT_LENGTH"]
-            for k, v in environ.items():
-                if k.startswith("HTTP_"):
-                    name = k[5:].replace("_", "-").title()
-                    hdrs[name] = str(v)
-            self.headers = hdrs
-
-            try:
-                clen = int(environ.get("CONTENT_LENGTH") or 0)
-            except ValueError:
-                clen = 0
-            raw_in = environ["wsgi.input"].read(clen) if (clen > 0 and "wsgi.input" in environ) else b""
-            self.rfile = io.BytesIO(raw_in)
-            self.wfile = io.BytesIO()
-            self._wsgi_status = 200
-            self._wsgi_headers: List[Tuple[str, str]] = []
-
-        def send_response(self, code: int, message: Optional[str] = None) -> None:
-            self._wsgi_status = int(code)
-
-        def send_header(self, keyword: str, value: str) -> None:
-            self._wsgi_headers.append((str(keyword), str(value)))
-
-        def end_headers(self) -> None:
-            return None
-
-    h = _WSGIHandler()
-    if h.command == "POST":
-        h.do_POST()
-    else:
-        h.do_GET()
-
     try:
-        phrase = HTTPStatus(h._wsgi_status).phrase
-    except ValueError:
-        phrase = "OK"
-    start_response(f"{h._wsgi_status} {phrase}", h._wsgi_headers)
-    return [h.wfile.getvalue()]
+        class _WSGIHandler(AgentHTTPHandler):
+            def __init__(self) -> None:
+                self.command = str(environ.get("REQUEST_METHOD", "GET")).upper()
+                qs = str(environ.get("QUERY_STRING", "") or "")
+                path_info = str(environ.get("PATH_INFO", "/") or "/")
+                self.path = f"{path_info}?{qs}" if qs else path_info
+                self.request_version = str(environ.get("SERVER_PROTOCOL", "HTTP/1.1"))
+                self.client_address = (str(environ.get("REMOTE_ADDR", "127.0.0.1")), 0)
+
+                hdrs = http.client.HTTPMessage()
+                if environ.get("CONTENT_TYPE"):
+                    hdrs["Content-Type"] = str(environ["CONTENT_TYPE"])
+                if environ.get("CONTENT_LENGTH"):
+                    hdrs["Content-Length"] = str(environ["CONTENT_LENGTH"])
+                for k, v in environ.items():
+                    if k.startswith("HTTP_") and v is not None:
+                        name = k[5:].replace("_", "-").title()
+                        hdrs[name] = str(v)
+                self.headers = hdrs
+
+                try:
+                    clen = int(environ.get("CONTENT_LENGTH") or 0)
+                except (TypeError, ValueError):
+                    clen = 0
+                stream = environ.get("wsgi.input")
+                if stream is not None and clen > 0:
+                    raw_in = stream.read(clen)
+                elif stream is not None and self.command == "POST":
+                    raw_in = stream.read()
+                else:
+                    raw_in = b""
+                if isinstance(raw_in, str):
+                    raw_in = raw_in.encode("utf-8")
+                self.rfile = io.BytesIO(raw_in or b"")
+                self.wfile = io.BytesIO()
+                self._wsgi_status = 200
+                self._wsgi_headers: List[Tuple[str, str]] = []
+
+            def send_response(self, code: int, message: Optional[str] = None) -> None:
+                self._wsgi_status = int(code)
+
+            def send_header(self, keyword: str, value: str) -> None:
+                self._wsgi_headers.append((str(keyword), str(value)))
+
+            def end_headers(self) -> None:
+                return None
+
+        h = _WSGIHandler()
+        if h.command == "POST":
+            h.do_POST()
+        else:
+            h.do_GET()
+
+        try:
+            phrase = HTTPStatus(h._wsgi_status).phrase
+        except ValueError:
+            phrase = "OK"
+        start_response(f"{h._wsgi_status} {phrase}", h._wsgi_headers)
+        return [h.wfile.getvalue()]
+    except Exception as exc:
+        err_bytes = json.dumps({"error": f"Server error: {exc}"}, ensure_ascii=False).encode("utf-8")
+        start_response("500 Internal Server Error", [("Content-Type", "application/json; charset=utf-8"), ("Content-Length", str(len(err_bytes)))])
+        return [err_bytes]
 
 
 def create_server(host: str = "127.0.0.1", port: int = 8000) -> ThreadingHTTPServer:

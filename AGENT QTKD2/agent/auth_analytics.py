@@ -17,9 +17,16 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-_STORAGE_DIR = Path("/tmp/htd_data") if os.environ.get("VERCEL") else ROOT_DIR
-if os.environ.get("VERCEL"):
-    _STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+_STORAGE_DIR = Path("/tmp/htd_data") if os.environ.get("VERCEL") else (ROOT_DIR / ".htd_data")
+_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+for _legacy_name in ("users.json", "analytics_events.jsonl", "site_settings.json", ".session_secret"):
+    _old_f = ROOT_DIR / _legacy_name
+    _new_f = _STORAGE_DIR / _legacy_name
+    if _old_f.is_file() and not _new_f.is_file():
+        try:
+            _old_f.replace(_new_f)
+        except Exception:
+            pass
 USERS_FILE = _STORAGE_DIR / "users.json"
 ANALYTICS_FILE = _STORAGE_DIR / "analytics_events.jsonl"
 SETTINGS_FILE = _STORAGE_DIR / "site_settings.json"
@@ -33,6 +40,7 @@ SESSION_TTL_SEC = 30 * 24 * 3600
 
 OWNER_PHONES = {"0332125570"}
 OWNER_USERNAMES = {"htd24307@gmail.com", "hathuyduong", "hathuyduong2403"}
+_DEFAULT_OWNER_HASH = "pbkdf2_sha256$cd0b034dd13f4a95b6a3d9927ff2734d$9b4d2a48c8007a7ceef0960363aa1ffdf693bc1a83f575ff53069a7820b34929"
 
 
 def _get_secret() -> bytes:
@@ -57,13 +65,39 @@ def normalize_phone(raw: str) -> str:
 
 
 def _load_users() -> List[Dict[str, Any]]:
-    if not USERS_FILE.is_file():
-        return []
-    try:
-        data = json.loads(USERS_FILE.read_text(encoding="utf-8"))
-        return data if isinstance(data, list) else []
-    except Exception:
-        return []
+    users: List[Dict[str, Any]] = []
+    if USERS_FILE.is_file():
+        try:
+            data = json.loads(USERS_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                users = data
+        except Exception:
+            users = []
+    has_owner = any(
+        normalize_phone(u.get("phone") or "") in OWNER_PHONES
+        or (u.get("username") or "").lower() in OWNER_USERNAMES
+        for u in users
+    )
+    if not has_owner:
+        now_iso = datetime.now().astimezone().isoformat(timespec="seconds")
+        users.insert(
+            0,
+            {
+                "username": "hathuyduong2403",
+                "display_name": "Hà Thuỳ Dương",
+                "phone": "0332125570",
+                "password_hash": _DEFAULT_OWNER_HASH,
+                "role": "admin",
+                "is_locked": False,
+                "created_at": now_iso,
+                "last_login_at": "",
+            },
+        )
+        try:
+            _save_users(users)
+        except Exception:
+            pass
+    return users
 
 
 def _save_users(users: List[Dict[str, Any]]) -> None:

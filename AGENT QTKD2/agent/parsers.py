@@ -144,12 +144,13 @@ def level_to_score(value: Any, invert: bool = False) -> Optional[float]:
 
 
 def decode_text_bytes(raw: bytes) -> str:
-    for enc in ("utf-8-sig", "utf-8", "utf-16", "cp1258", "cp1252", "latin-1"):
+    encs = ("utf-16", "utf-16-le", "utf-16-be", "utf-8-sig", "utf-8", "cp1258", "cp1252", "latin-1") if b"\x00" in raw[:400] else ("utf-8-sig", "utf-8", "utf-16", "cp1258", "cp1252", "latin-1")
+    for enc in encs:
         try:
-            return raw.decode(enc)
+            return raw.decode(enc).replace("\x00", "")
         except UnicodeDecodeError:
             continue
-    return raw.decode("utf-8", errors="replace")
+    return raw.decode("utf-8", errors="replace").replace("\x00", "")
 
 
 def parse_csv_bytes(raw: bytes, filename: str = "uploaded.csv") -> Dict[str, List[Dict[str, Any]]]:
@@ -161,28 +162,55 @@ def parse_csv_bytes(raw: bytes, filename: str = "uploaded.csv") -> Dict[str, Lis
 
     sample = "\n".join(lines[:10])
     delimiter = ","
+    best_delim_score = -1
+    for cand_d in (",", ";", "\t", "|"):
+        counts = [ln.count(cand_d) for ln in lines[:10]]
+        if any(c > 0 for c in counts):
+            score = sum(counts)
+            if score > best_delim_score:
+                best_delim_score = score
+                delimiter = cand_d
     try:
         dialect = csv.Sniffer().sniff(sample, delimiters=",;\t|")
-        delimiter = dialect.delimiter
+        if dialect.delimiter in (",", ";", "\t", "|") and sample.count(dialect.delimiter) >= max(1, best_delim_score * 0.5):
+            delimiter = dialect.delimiter
     except csv.Error:
-        if sample.count(";") > sample.count(","):
-            delimiter = ";"
-        elif sample.count("\t") > sample.count(","):
-            delimiter = "\t"
+        pass
 
     reader = csv.reader(io.StringIO(text), delimiter=delimiter)
     all_rows = list(reader)
     if not all_rows:
         return {}
 
-    # Find first non-empty header row
+    # Smart header row detection: skip narrow title banner rows above a wider column header row
     header_idx = 0
     while header_idx < len(all_rows) and not any(str(c).strip() for c in all_rows[header_idx]):
         header_idx += 1
     if header_idx >= len(all_rows):
         return {}
 
-    headers = [str(c).strip() or f"col_{i+1}" for i, c in enumerate(all_rows[header_idx])]
+    scan_end = min(len(all_rows), header_idx + 8)
+    best_idx = header_idx
+    best_width = sum(1 for c in all_rows[header_idx] if str(c).strip())
+    for cand_i in range(header_idx + 1, scan_end):
+        non_empty = [str(c).strip() for c in all_rows[cand_i] if str(c).strip()]
+        if len(non_empty) >= max(3, best_width + 2):
+            # Prefer row whose cells look like text labels rather than pure numbers
+            text_cells = sum(1 for v in non_empty if parse_number(v) is None)
+            if text_cells >= len(non_empty) * 0.6:
+                best_idx = cand_i
+                best_width = len(non_empty)
+                break
+    header_idx = best_idx
+
+    raw_headers = [str(c).strip() or f"col_{i+1}" for i, c in enumerate(all_rows[header_idx])]
+    seen_h: Dict[str, int] = {}
+    headers: List[str] = []
+    for h in raw_headers:
+        cnt = seen_h.get(h, 0) + 1
+        seen_h[h] = cnt
+        headers.append(h if cnt == 1 else f"{h} ({cnt})")
+
     records: List[Dict[str, Any]] = []
     for idx in range(header_idx + 1, len(all_rows)):
         row_vals = all_rows[idx]
@@ -197,6 +225,21 @@ def parse_csv_bytes(raw: bytes, filename: str = "uploaded.csv") -> Dict[str, Lis
             val = row_vals[col_i].strip() if col_i < len(row_vals) else ""
             rec[h] = val
         records.append(rec)
+
+    if not records:
+        # Single non-empty row sheet -> convert to key-value records so it stays analyzable
+        for col_i, h in enumerate(headers):
+            if h.startswith("col_") and not h:
+                continue
+            records.append(
+                {
+                    "_row_number": header_idx + 1,
+                    "_source_file": filename,
+                    "_sheet_name": Path(filename).stem,
+                    "Cot": f"Cột {col_i + 1}",
+                    "Noi_Dung": h,
+                }
+            )
 
     sheet_key = Path(filename).stem
     return {sheet_key: records}
@@ -304,6 +347,9 @@ def parse_xlsx_bytes(raw: bytes, filename: str = "uploaded.xlsx") -> Dict[str, L
         target = rels.get(rid, "")
         if target and target in names:
             sheets_meta.append((name, target))
+    if not sheets_meta:
+        for idx_s, n in enumerate(sorted(n for n in names if n.startswith("xl/worksheets/sheet") and n.endswith(".xml")), start=1):
+            sheets_meta.append((f"Sheet{idx_s}", n))
 
     result: Dict[str, List[Dict[str, Any]]] = {}
     for sheet_name, target in sheets_meta:
@@ -358,15 +404,30 @@ def parse_xlsx_bytes(raw: bytes, filename: str = "uploaded.xlsx") -> Dict[str, L
             continue
 
         sorted_row_nums = sorted(rows_dict.keys())
-        header_row_num = sorted_row_nums[0]
+        header_pos = 0
+        first_width = len([v for v in rows_dict[sorted_row_nums[0]].values() if v.strip()])
+        for pos in range(1, min(len(sorted_row_nums), 8)):
+            cand_cells = rows_dict[sorted_row_nums[pos]]
+            non_empty = [v.strip() for v in cand_cells.values() if v.strip()]
+            if len(non_empty) >= max(3, first_width + 2):
+                text_cells = sum(1 for v in non_empty if parse_number(v) is None)
+                if text_cells >= len(non_empty) * 0.6:
+                    header_pos = pos
+                    break
+
+        header_row_num = sorted_row_nums[header_pos]
         header_cells = rows_dict[header_row_num]
-        used_cols = sorted(set(header_cells.keys()) | {c for r in rows_dict.values() for c in r.keys()})
+        used_cols = sorted(set(header_cells.keys()) | {c for r_num in sorted_row_nums[header_pos:] for c in rows_dict[r_num].keys()})
+        seen_hdr: Dict[str, int] = {}
         headers: Dict[int, str] = {}
         for c_idx in used_cols:
-            headers[c_idx] = header_cells.get(c_idx, "").strip() or f"col_{c_idx + 1}"
+            base_h = header_cells.get(c_idx, "").strip() or f"col_{c_idx + 1}"
+            cnt = seen_hdr.get(base_h, 0) + 1
+            seen_hdr[base_h] = cnt
+            headers[c_idx] = base_h if cnt == 1 else f"{base_h} ({cnt})"
 
         records: List[Dict[str, Any]] = []
-        for r_num in sorted_row_nums[1:]:
+        for r_num in sorted_row_nums[header_pos + 1:]:
             r_cells = rows_dict[r_num]
             if not any(v.strip() for v in r_cells.values()):
                 continue
@@ -378,6 +439,22 @@ def parse_xlsx_bytes(raw: bytes, filename: str = "uploaded.xlsx") -> Dict[str, L
             for c_idx in used_cols:
                 rec[headers[c_idx]] = r_cells.get(c_idx, "")
             records.append(rec)
+
+        if not records and sorted_row_nums:
+            # Preserve single-row or banner-only sheet cleanly as structured rows
+            for r_num in sorted_row_nums:
+                r_cells = rows_dict[r_num]
+                for c_idx, val in sorted(r_cells.items()):
+                    if val.strip():
+                        records.append(
+                            {
+                                "_row_number": r_num,
+                                "_source_file": filename,
+                                "_sheet_name": sheet_name,
+                                "Cot": f"Cột {c_idx + 1}",
+                                "Noi_Dung": val.strip(),
+                            }
+                        )
 
         result[sheet_name] = records
 

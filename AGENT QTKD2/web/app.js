@@ -16,6 +16,9 @@ const state = {
   preferredOutput: "dashboard",
   currentScene: 0,
   lastResult: null,
+  maxApprovedStep: 1,
+  customTitle: "",
+  customSummary: "",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -101,14 +104,12 @@ document.addEventListener("click", (e) => {
 
 function showToast(msg, isError = false) {
   const toast = document.createElement("div");
-  toast.className = `fixed bottom-5 right-5 ${
-    isError
-      ? "bg-rose-100/95 text-rose-800 border-2 border-rose-300"
-      : "bg-emerald-100/95 text-emerald-800 border-2 border-emerald-200"
-  } shadow-xl px-4 py-2.5 rounded-2xl text-xs z-50 flex items-center space-x-2 backdrop-blur-xl`;
-  toast.innerHTML = `<i class="fa-solid ${
-    isError ? "fa-circle-exclamation text-rose-500" : "fa-sparkles text-pink-500"
-  } text-sm"></i><span class="font-bold">${esc(msg)}</span>`;
+  toast.className = `fixed bottom-5 right-5 ${isError
+    ? "bg-rose-100/95 text-rose-800 border-2 border-rose-300"
+    : "bg-emerald-100/95 text-emerald-800 border-2 border-emerald-200"
+    } shadow-xl px-4 py-2.5 rounded-2xl text-xs z-50 flex items-center space-x-2 backdrop-blur-xl`;
+  toast.innerHTML = `<i class="fa-solid ${isError ? "fa-circle-exclamation text-rose-500" : "fa-sparkles text-pink-500"
+    } text-sm"></i><span class="font-bold">${esc(msg)}</span>`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3200);
 }
@@ -186,7 +187,99 @@ function openAuditDrawerFromSettings() {
   switchTab("tabTools");
 }
 
+function updateStudioStepper() {
+  const step = state.maxApprovedStep || 1;
+  const p1 = $("stepperPill1");
+  const p2 = $("stepperPill2");
+  const p3 = $("stepperPill3");
+  const p4 = $("stepperPill4");
+  const stTxt = $("stepperStatusText");
+  if (p1) p1.className = "px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800";
+  if (p2) {
+    p2.textContent = step > 2 ? "✓ 2. Làm sạch" : "2. Làm sạch";
+    p2.className = step > 2
+      ? "px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800"
+      : "px-2.5 py-1 rounded-full bg-pink-500 text-white shadow-sm";
+  }
+  if (p3) {
+    p3.textContent = step > 3 ? "✓ 3. Phân tích" : step === 3 ? "3. Phân tích" : "🔒 3. Phân tích";
+    p3.className = step > 3
+      ? "px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800"
+      : step === 3
+        ? "px-2.5 py-1 rounded-full bg-pink-500 text-white shadow-sm"
+        : "px-2.5 py-1 rounded-full bg-slate-100 text-slate-400";
+  }
+  if (p4) {
+    p4.textContent = step >= 4 ? "✓ 4. Báo cáo" : "🔒 4. Báo cáo";
+    p4.className = step >= 4
+      ? "px-2.5 py-1 rounded-full bg-emerald-500 text-white shadow-sm"
+      : "px-2.5 py-1 rounded-full bg-slate-100 text-slate-400";
+  }
+  if (stTxt) {
+    stTxt.textContent =
+      step >= 4
+        ? "✅ Đã mở khóa Bước 4: Sẵn sàng xuất Word, Excel & HTML"
+        : step === 3
+          ? "📊 Đang ở Bước 3: Xem Dashboard & bấm 'Duyệt bước này' để xuất báo cáo"
+          : "🧹 Đang ở Bước 2: Xem trước dữ liệu sạch & bấm 'Duyệt bước này' để sang Phân tích";
+  }
+  $("step2ApproveBox")?.classList.toggle("hidden", step >= 3);
+  $("step3ApproveBox")?.classList.toggle("hidden", step !== 3);
+  $("outputReadyBanner")?.classList.toggle("hidden", step < 4);
+}
+
+async function approveStep2() {
+  if (!state.lastResult) return;
+  state.maxApprovedStep = Math.max(state.maxApprovedStep, 3);
+  updateStudioStepper();
+  switchTab("tabRank");
+  if (typeof triggerHaptic === "function") triggerHaptic([12, 20, 14]);
+  showToast("✅ Đã duyệt Bước 2! Đang mở trang Phân tích chuyên sâu (Bước 3 / 4).");
+}
+
+async function approveStep3() {
+  if (!state.lastResult) return;
+  state.maxApprovedStep = 4;
+  updateStudioStepper();
+  if (typeof triggerHaptic === "function") triggerHaptic([15, 25, 18]);
+  showToast("🎉 Đã duyệt Bước 3! Đã mở khóa Bước 4 xuất Word / Excel / HTML.");
+  $("outputReadyBanner")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function editDashboardTitlePrompt(forceOpen) {
+  const ed = $("dashTitleEditor");
+  if (!ed) return;
+  const open = typeof forceOpen === "boolean" ? forceOpen : ed.classList.contains("hidden");
+  if (open) {
+    if ($("dashEditTitleInput")) $("dashEditTitleInput").value = state.customTitle || ($("dashMainTitle")?.textContent || "");
+    if ($("dashEditSummaryInput")) $("dashEditSummaryInput").value = state.customSummary || ($("dashSubtitle")?.textContent || "");
+    ed.classList.remove("hidden");
+    $("dashEditTitleInput")?.focus();
+  } else {
+    ed.classList.add("hidden");
+  }
+}
+
+function saveDashboardTitleEdit() {
+  const nt = ($("dashEditTitleInput")?.value || "").trim();
+  const ns = ($("dashEditSummaryInput")?.value || "").trim();
+  if (nt) {
+    state.customTitle = nt;
+    if ($("dashMainTitle")) $("dashMainTitle").textContent = nt;
+  }
+  if (ns) {
+    state.customSummary = ns;
+    if ($("dashSubtitle")) $("dashSubtitle").textContent = ns;
+  }
+  editDashboardTitlePrompt(false);
+  showToast("✅ Đã cập nhật tiêu đề & tóm tắt Dashboard!");
+}
+
 function switchTab(tabId) {
+  if (state.lastResult && state.maxApprovedStep < 3 && (tabId === "tabRank" || tabId === "tabProposal")) {
+    showToast("⚠️ Tuyệt đối không nhảy bước: hãy kiểm tra Bước 2 và bấm 'Duyệt bước này' trước khi sang Phân tích!", true);
+    tabId = "tabNorm";
+  }
   document.querySelectorAll(".tab-content").forEach((el) => el.classList.remove("active"));
   const target = $(tabId);
   if (target) target.classList.add("active");
@@ -194,9 +287,13 @@ function switchTab(tabId) {
   ["tabRank", "tabProposal", "tabNorm"].forEach((id) => {
     const btn = $("btn" + id.charAt(0).toUpperCase() + id.slice(1));
     if (!btn) return;
+    const locked = state.lastResult && state.maxApprovedStep < 3 && (id === "tabRank" || id === "tabProposal");
     if (id === tabId) {
       btn.className =
         "cute-btn px-4 py-2 bg-gradient-to-r from-pink-400 via-rose-400 to-orange-300 text-white border border-white/60 rounded-2xl font-extrabold text-xs whitespace-nowrap";
+    } else if (locked) {
+      btn.className =
+        "cute-btn px-4 py-2 bg-slate-100 text-slate-400 border border-white rounded-2xl font-bold text-xs whitespace-nowrap opacity-70";
     } else {
       btn.className =
         "cute-btn px-4 py-2 bg-white/65 text-slate-600 border border-white rounded-2xl font-bold text-xs whitespace-nowrap";
@@ -330,8 +427,8 @@ function setCrystalStatus(pct, kind, headline, subtitle) {
       kind === "error"
         ? "h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-500 transition-all duration-500"
         : kind === "done"
-        ? "h-full rounded-full bg-gradient-to-r from-emerald-400 to-pink-400 transition-all duration-500"
-        : "h-full rounded-full bg-gradient-to-r from-pink-400 via-rose-400 to-orange-300 transition-all duration-500";
+          ? "h-full rounded-full bg-gradient-to-r from-emerald-400 to-pink-400 transition-all duration-500"
+          : "h-full rounded-full bg-gradient-to-r from-pink-400 via-rose-400 to-orange-300 transition-all duration-500";
   }
   if ($("scene2Headline") && headline) $("scene2Headline").textContent = headline;
   if ($("scene2ProgressText") && subtitle) $("scene2ProgressText").textContent = subtitle;
@@ -374,11 +471,20 @@ function openPreferredOutput(mode, autoTriggered = false) {
   if (state.currentScene !== 3) {
     goToScene(3, "unfold");
   }
+  if (state.maxApprovedStep < 3) {
+    switchTab("tabNorm");
+    return;
+  }
   if (chosen === "report") {
     switchTab("tabProposal");
     switchProposalView("markdown");
     if (!autoTriggered) showToast("Đã mở Báo cáo (BC) chi tiết!");
   } else if (chosen === "html") {
+    if (state.maxApprovedStep < 4) {
+      switchTab("tabRank");
+      if (!autoTriggered) showToast("⚠️ Vui lòng bấm 'Duyệt bước này' ở Bước 3 để mở khóa xuất HTML (Bước 4)!", true);
+      return;
+    }
     if (state.lastResult?.run_id) {
       exportHTML();
     } else if (!autoTriggered) {
@@ -504,14 +610,14 @@ function renderUploadedFiles() {
         rep.status === "ok"
           ? "bg-emerald-50 border-emerald-200 text-emerald-700"
           : rep.status === "error"
-          ? "bg-rose-50 border-rose-200 text-rose-700"
-          : "bg-pink-50 border-pink-200 text-pink-700";
+            ? "bg-rose-50 border-rose-200 text-rose-700"
+            : "bg-pink-50 border-pink-200 text-pink-700";
       const icon =
         rep.status === "ok"
           ? `<i class="fa-solid fa-circle-check"></i>`
           : rep.status === "error"
-          ? `<i class="fa-solid fa-circle-exclamation"></i>`
-          : `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            ? `<i class="fa-solid fa-circle-exclamation"></i>`
+            : `<i class="fa-solid fa-spinner fa-spin"></i>`;
       const text = rep.text || (rep.status === "pending" ? "AI đang đọc file..." : "");
       return `
       <li class="rounded-xl border px-2.5 py-1.5 ${cls}">
@@ -826,7 +932,7 @@ function askUserConfirm({
     if (stepsEl) {
       if (steps && steps.length) {
         stepsEl.innerHTML = steps
-          .map((st, idx) => `<div class="flex items-start gap-2"><span class="px-1.5 py-0.5 rounded-full bg-pink-500 text-white font-black text-[10px] shrink-0">${idx + 1}</span><span>${escapeHtml(st)}</span></div>`)
+          .map((st, idx) => `<div class="flex items-start gap-2"><span class="px-1.5 py-0.5 rounded-full bg-pink-500 text-white font-black text-[10px] shrink-0">${idx + 1}</span><span>${esc(st)}</span></div>`)
           .join("");
         stepsEl.classList.remove("hidden");
       } else {
@@ -860,7 +966,7 @@ function askUserConfirm({
 }
 window.askUserConfirm = askUserConfirm;
 
-async function runAIAgentWorkflow() {
+async function runAIAgentWorkflow(isCleaningRerun = false) {
   const urls = ($("gsheetsUrl")?.value || "").trim();
   const larkUrls = ($("larkBaseUrl")?.value || "").trim();
   if (!state.files.length && !urls && !larkUrls && !state.selectedSampleId && !state.stagedId) {
@@ -868,25 +974,8 @@ async function runAIAgentWorkflow() {
     return;
   }
 
-  const sourcesDesc = [];
-  if (state.files.length) sourcesDesc.push(`${state.files.length} tệp tin tải lên`);
-  if (urls) sourcesDesc.push("Link Google Sheets");
-  if (larkUrls) sourcesDesc.push("Link Lark Base");
-  if (state.selectedSampleId) sourcesDesc.push(`Bộ dữ liệu mẫu (${state.selectedSampleId})`);
-
-  const okReceive = await askUserConfirm({
-    title: "📥 Bước 1: Xác nhận tiếp nhận dữ liệu",
-    message: `Bạn có muốn AI tiếp nhận và kiểm tra nguồn dữ liệu (${sourcesDesc.join(", ") || "đã chọn"}) không?`,
-    steps: [
-      "Kiểm tra định dạng File / Google Sheets / Lark Base",
-      "Đọc danh sách bảng và các cột dữ liệu trước khi làm sạch",
-    ],
-    confirmText: "Có, tiếp nhận dữ liệu ✓",
-    cancelText: "Không, để sau",
-  });
-  if (!okReceive) {
-    showToast("Đã hủy thao tác theo yêu cầu của bạn.", false);
-    return;
+  if (!isCleaningRerun) {
+    state.maxApprovedStep = 1;
   }
 
   showErrorBanner("");
@@ -894,18 +983,18 @@ async function runAIAgentWorkflow() {
   $("outputReadyBanner")?.classList.add("hidden");
   $("btnScene2Next")?.classList.add("hidden");
   goToScene(2, "dive");
-  setCrystalStatus(35, "idle", "AI đang tiếp nhận dữ liệu...", "Đang kiểm tra định dạng File / Sheet bạn vừa gửi...");
+  setCrystalStatus(35, "idle", "Bước 1 / 4 · Kết nối & Kiểm tra nguồn dữ liệu...", "AI đang đọc cấu trúc File / Sheet và các cột dữ liệu...");
 
   const btn = $("btnRunAgent");
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang tiếp nhận...</span>`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang kiểm tra Bước 1...</span>`;
   }
 
   const badge = $("workflowStatusBadge");
   if (badge) {
     badge.className = "px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-[11px] font-extrabold border border-pink-200";
-    badge.innerText = "Đang tiếp nhận";
+    badge.innerText = "Bước 1: Kiểm tra";
   }
 
   try {
@@ -918,27 +1007,42 @@ async function runAIAgentWorkflow() {
       throw new Error(inspData.error || "Lỗi tiếp nhận dữ liệu.");
     }
 
-    const tblCount = (inspData.tables || []).length;
-    const totalRows = (inspData.tables || []).reduce((acc, t) => acc + (t.row_count || 0), 0);
-    const okClean = await askUserConfirm({
-      title: "🧹 Bước 2: Xác nhận làm sạch & phân tích",
-      message: `Đã tiếp nhận ${tblCount} bảng dữ liệu (${totalRows} dòng). Bạn có muốn AI bắt đầu làm sạch các bước dưới đây và phân tích kết quả không?`,
-      steps: [
-        "Chuẩn hóa tên cột, định dạng ngày tháng và số liệu",
-        "Khử trùng lặp bản ghi và phát hiện ô thiếu / bất thường",
-        "Phân tích đa chiều, tính KPI và xuất Dashboard / Excel / Word",
-      ],
-      confirmText: "Đồng ý, làm sạch & phân tích ✓",
-      cancelText: "Không, dừng lại",
-    });
-    if (!okClean) {
-      setCrystalStatus(35, "idle", "⏸ Đã dừng theo xác nhận của bạn", "Dữ liệu chưa được làm sạch. Bạn có thể bấm chạy lại bất kỳ lúc nào.");
-      if (badge) badge.innerText = "Chờ xác nhận";
-      showToast("Đã dừng trước bước làm sạch theo yêu cầu của bạn.", false);
-      return;
+    const tables = inspData.tables || [];
+    const tblCount = tables.length;
+    const totalRows = tables.reduce((acc, t) => acc + (t.row_count || 0), 0);
+
+    if (!isCleaningRerun) {
+      const cfg = collectConfig();
+      const biz = cfg.business_context?.business_type || "doanh nghiệp của bạn";
+      const q = cfg.user_prompt || "phân tích tổng quan dữ liệu, làm sạch và đề xuất hành động";
+      const colsAll = tables.flatMap((t) => t.columns || []);
+      const hasDate = colsAll.some((c) => /ngay|date|thang|month|ky|period|nam/i.test(String(c)));
+      const hasMoney = colsAll.some((c) => /doanh|thu|chi|phi|loi|nhuan|tien|revenue|cost|profit|gia/i.test(String(c)));
+
+      const step1Items = [
+        `Tôi hiểu yêu cầu của bạn: Phân tích cho "${biz}" với trọng tâm: "${q}" (trên ${tblCount} bảng, ${totalRows} dòng).`,
+        `Góc nhìn đề xuất bổ sung: ${hasDate ? "Đo xu hướng tăng/giảm theo kỳ ngày/tháng" : "Nên bổ sung cột Ngày/Tháng để theo dõi xu hướng theo kỳ"}; ${hasMoney ? "phân tích biên lợi nhuận & nhóm đóng góp chính" : "xếp hạng các nhóm có giá trị cao nhất"}.`,
+        `Câu hỏi làm rõ đã ghi nhận: (1) Giai đoạn: ${cfg.business_context?.clarifying_answers?.period || "Toàn bộ"}; (2) Quyết định: ${cfg.business_context?.clarifying_answers?.decision || "Tối ưu vận hành"}; (3) So sánh: ${cfg.business_context?.clarifying_answers?.compare || "Kỳ trước / Nhóm"}; (4) Liên kết bảng: ${cfg.business_context?.clarifying_answers?.join_key || "Tự động"}.`,
+        `Đề xuất làm sạch Bước 2: Chuẩn hóa ${tblCount} bảng (cắt khoảng trắng, xóa dòng trống/trùng, kiểm tra ${tables.reduce((a, t) => a + (t.missing_cells || 0), 0)} ô trống).`,
+      ];
+
+      const okStep1 = await askUserConfirm({
+        title: "🤖 Bước 1 / 4: Trao đổi yêu cầu & Chốt phạm vi",
+        message: "Phạm vi và câu hỏi tôi hiểu như trên đã đúng ý bạn chưa? Bạn muốn bổ sung hay chỉnh sửa gì trước khi tôi làm sạch dữ liệu ở Bước 2 không?",
+        steps: step1Items,
+        confirmText: "✓ Duyệt Bước 1 · Sang Bước 2 (Làm sạch)",
+        cancelText: "← Quay lại chỉnh yêu cầu",
+      });
+      if (!okStep1) {
+        goToScene(1, "left");
+        showToast("Bạn hãy bổ sung yêu cầu/câu hỏi làm rõ ở Bước 1 rồi chạy tiếp nhé!", false);
+        return;
+      }
+      state.maxApprovedStep = 2;
     }
 
-    if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang làm sạch & phân tích...</span>`;
+    if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Bước 2: Đang làm sạch...</span>`;
+    setCrystalStatus(72, "clean", "🧹 Bước 2 / 4: Đang làm sạch & chuẩn hóa...", "Áp dụng quy tắc làm sạch, kiểm tra độ phủ & thống kê cột...");
     const fd = buildFormData({ config: collectConfig() });
     const [resp] = await Promise.all([fetch("/api/run", { method: "POST", body: fd }), sleep(80)]);
     const data = await resp.json();
@@ -1058,7 +1162,7 @@ async function applyAgentResult(res) {
     }
   }
 
-  $("outputReadyBanner")?.classList.remove("hidden");
+  state.maxApprovedStep = Math.max(2, state.maxApprovedStep);
 
   renderHitlStage3State(res);
   renderHitlBoundaryState(res);
@@ -1066,13 +1170,15 @@ async function applyAgentResult(res) {
   renderProposalAndSurvey(res);
   renderQualityTab(res);
   renderAuditTab(res);
-  const topCard = $("top1Name")?.closest(".cute-glass-gradient-pink") || $("top1Name")?.closest(".cute-card");
-  if (topCard) {
-    const rect = topCard.getBoundingClientRect();
-    if (rect.width > 0) spawnSparkles(rect.left + rect.width * 0.6, rect.top + rect.height * 0.45, 16);
+  updateStudioStepper();
+  goToScene(3, "unfold");
+  if (state.maxApprovedStep < 3) {
+    switchTab("tabNorm");
+    showToast("🧹 Đã hoàn tất Bước 2: Hãy kiểm tra dữ liệu sạch và bấm 'Duyệt bước này' để sang Bước 3!");
+  } else {
+    openPreferredOutput(state.preferredOutput, true);
+    showToast("Đã cập nhật kết quả phân tích!");
   }
-  openPreferredOutput(state.preferredOutput, true);
-  showToast("Đã xử lý dữ liệu thành công!");
 }
 
 function syncHitlIdlePill() {
@@ -1386,24 +1492,24 @@ function renderCompanyStatisticsDashboard(res) {
     const branches = kt.branches || [];
     $("kpiTreeBranches").innerHTML = branches.length
       ? branches
-          .map((br) => {
-            const stCls =
-              br.status === "RISK"
-                ? "bg-rose-100 text-rose-700 border-rose-200"
-                : br.status === "WATCH"
+        .map((br) => {
+          const stCls =
+            br.status === "RISK"
+              ? "bg-rose-100 text-rose-700 border-rose-200"
+              : br.status === "WATCH"
                 ? "bg-amber-100 text-amber-800 border-amber-200"
                 : "bg-emerald-100 text-emerald-700 border-emerald-200";
-            const stLbl = br.status === "RISK" ? "Rủi ro" : br.status === "WATCH" ? "Theo dõi" : "Đạt tốt";
-            const chHtml = (br.children || [])
-              .map(
-                (ch) => `
+          const stLbl = br.status === "RISK" ? "Rủi ro" : br.status === "WATCH" ? "Theo dõi" : "Đạt tốt";
+          const chHtml = (br.children || [])
+            .map(
+              (ch) => `
               <li class="flex items-center justify-between gap-2 text-[11px] bg-white/70 px-2.5 py-1.5 rounded-xl border border-white">
                 <span class="text-slate-700 font-semibold truncate">${esc(ch.label)}</span>
                 <span class="font-extrabold text-pink-700 shrink-0">${esc(String(ch.value))}</span>
               </li>`
-              )
-              .join("");
-            return `
+            )
+            .join("");
+          return `
               <div class="p-3.5 rounded-2xl bg-white/70 border border-white shadow-sm space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <div>
@@ -1414,8 +1520,8 @@ function renderCompanyStatisticsDashboard(res) {
                 </div>
                 <ul class="space-y-1">${chHtml}</ul>
               </div>`;
-          })
-          .join("")
+        })
+        .join("")
       : `<div class="col-span-2 text-xs text-slate-500 font-semibold">Chưa có nhánh KPI số lượng cho tài liệu này.</div>`;
   }
 
@@ -1423,14 +1529,14 @@ function renderCompanyStatisticsDashboard(res) {
     const pes = cs.priority_entities || [];
     $("priorityEntitiesGrid").innerHTML = pes.length
       ? pes
-          .slice(0, 12)
-          .map((pe) => {
-            const tierCls = pe.tier.includes("Nhóm A")
-              ? "bg-pink-100 text-pink-800 border-pink-200"
-              : pe.tier.includes("Nhóm B")
+        .slice(0, 12)
+        .map((pe) => {
+          const tierCls = pe.tier.includes("Nhóm A")
+            ? "bg-pink-100 text-pink-800 border-pink-200"
+            : pe.tier.includes("Nhóm B")
               ? "bg-orange-100 text-orange-800 border-orange-200"
               : "bg-slate-100 text-slate-600 border-slate-200";
-            return `
+          return `
               <div class="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-white/75 border border-white text-xs">
                 <div class="flex items-center space-x-2 min-w-0">
                   <span class="w-6 h-6 rounded-full bg-pink-200 text-pink-800 font-extrabold text-[10px] flex items-center justify-center shrink-0">#${pe.rank}</span>
@@ -1441,8 +1547,8 @@ function renderCompanyStatisticsDashboard(res) {
                 </div>
                 <span class="px-2 py-0.5 rounded-full border text-[10px] font-extrabold shrink-0 ${tierCls}">${esc(pe.tier)}</span>
               </div>`;
-          })
-          .join("")
+        })
+        .join("")
       : `<div class="text-xs text-slate-500 font-semibold p-2">Không có cột đối tượng + số liệu để xếp hạng ưu tiên ABC.</div>`;
   }
 
@@ -1450,14 +1556,14 @@ function renderCompanyStatisticsDashboard(res) {
     const cls = cs.classifiers || [];
     $("classifiersGrid").innerHTML = cls.length
       ? cls
-          .map((cl) => {
-            const pills = (cl.groups || [])
-              .map(
-                (g) =>
-                  `<span class="px-2.5 py-1 rounded-xl bg-white/85 border border-pink-100 text-[11px] font-bold text-slate-700">${esc(g.label)}: <strong class="text-pink-700">${g.count}</strong> (${g.share_pct}%)</span>`
-              )
-              .join("");
-            return `
+        .map((cl) => {
+          const pills = (cl.groups || [])
+            .map(
+              (g) =>
+                `<span class="px-2.5 py-1 rounded-xl bg-white/85 border border-pink-100 text-[11px] font-bold text-slate-700">${esc(g.label)}: <strong class="text-pink-700">${g.count}</strong> (${g.share_pct}%)</span>`
+            )
+            .join("");
+          return `
               <div class="p-3 rounded-2xl bg-white/65 border border-white space-y-1.5">
                 <div class="flex justify-between items-center text-xs">
                   <strong class="text-slate-800">${esc(cl.group_name)}</strong>
@@ -1465,8 +1571,8 @@ function renderCompanyStatisticsDashboard(res) {
                 </div>
                 <div class="flex flex-wrap gap-1.5">${pills}</div>
               </div>`;
-          })
-          .join("")
+        })
+        .join("")
       : `<div class="text-xs text-slate-500 font-semibold p-2">Chưa có chiều phân nhóm danh mục trong dữ liệu.</div>`;
   }
 
@@ -1777,8 +1883,8 @@ function renderBIPipelineStages(bi) {
     const charts = bi.stage4_charts || [];
     $("biChartsGrid").innerHTML = charts.length
       ? charts
-          .map(
-            (ch) => `
+        .map(
+          (ch) => `
           <div class="p-4 rounded-3xl bg-white/80 border border-white shadow-sm space-y-2.5 flex flex-col justify-between">
             <div class="space-y-1">
               <div class="flex items-center justify-between gap-2">
@@ -1794,8 +1900,8 @@ function renderBIPipelineStages(bi) {
               <div class="text-slate-600"><strong class="text-orange-800">Ý nghĩa kinh doanh:</strong> ${esc(ch.business_meaning)}</div>
             </div>
           </div>`
-          )
-          .join("")
+        )
+        .join("")
       : `<div class="col-span-2 text-xs text-slate-500 p-3">Chưa có biểu đồ định lượng.</div>`;
   }
 
@@ -2072,7 +2178,25 @@ function renderCleanPreviewTable(resInput) {
     $("cleanPreviewMeta").textContent = `Xem trước sau làm sạch: ${fmtNumStat(tbl.raw_row_count || tbl.row_count)} dòng nguồn · ${cs.empty_rows_dropped || 0} dòng trống · ${cs.dedup_dropped_count || 0} dòng trùng · ${cs.missing_rows_dropped || 0} dòng thiếu bị xóa · ${cs.trimmed_cells_count || 0} ô đã cắt khoảng trắng`;
   }
   const headers = tbl.headers || [];
-  const rows = tbl.preview_rows || [];
+  let rows = tbl.preview_rows || [];
+
+  const cpSel = $("cleanPeriodFilterSelect");
+  const dateCol = headers.find((h) => /ngay|date|thang|month|ky|period/i.test(String(h)));
+  if (cpSel) {
+    if (dateCol && rows.length) {
+      const uniqueVals = Array.from(new Set(rows.map((r) => String(r[dateCol] ?? "").trim()).filter(Boolean)));
+      if (resInput || cpSel.options.length <= 1) {
+        cpSel.innerHTML = `<option value="__ALL__">📅 Tất cả ngày/kỳ</option>` + uniqueVals.slice(0, 30).map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+      }
+      cpSel.classList.remove("hidden");
+      if (cpSel.value && cpSel.value !== "__ALL__") {
+        rows = rows.filter((r) => String(r[dateCol] ?? "").trim() === cpSel.value);
+      }
+    } else {
+      cpSel.classList.add("hidden");
+    }
+  }
+
   if ($("cleanedPreviewTableHead")) {
     $("cleanedPreviewTableHead").innerHTML = `<tr>${headers.map((h) => `<th class="p-2.5 whitespace-nowrap border-b border-pink-100">${esc(h)}</th>`).join("")}</tr>`;
   }
@@ -2081,11 +2205,16 @@ function renderCleanPreviewTable(resInput) {
       ? rows.map((r) => `<tr class="hover:bg-pink-50/40">${headers.map((h) => `<td class="p-2 whitespace-nowrap text-slate-700">${esc(r[h] ?? "")}</td>`).join("")}</tr>`).join("")
       : `<tr><td colspan="${Math.max(1, headers.length)}" class="p-4 text-center text-slate-400">Không có dòng dữ liệu sạch.</td></tr>`;
   }
+  const s2Box = $("step2BreakdownBox");
+  const mainBk = $("perDatasetBreakdownGrid");
+  if (s2Box && mainBk) {
+    s2Box.innerHTML = mainBk.innerHTML;
+  }
 }
 
 async function reRunWithCleaningRules() {
-  showToast("Đang áp dụng quy tắc làm sạch mới...");
-  await runAIAgentWorkflow();
+  showToast("Đang áp dụng lại quy tắc làm sạch...");
+  await runAIAgentWorkflow(true);
 }
 
 function renderTab1Results(res) {
@@ -2187,8 +2316,8 @@ function renderTab1Results(res) {
       const rankBadge = item.rank === 1
         ? "bg-pink-200 text-pink-800 font-extrabold"
         : item.rank === 2
-        ? "bg-orange-200 text-orange-800 font-extrabold"
-        : "bg-rose-50 text-rose-600 font-bold";
+          ? "bg-orange-200 text-orange-800 font-extrabold"
+          : "bg-rose-50 text-rose-600 font-bold";
       const cits = (item.citation_ids || []).slice(0, 3).map((c) => `<button type="button" onclick="openCitationModal('${c}')" class="cit-chip">${c}</button>`).join("");
       return `
         <tr class="hover:bg-pink-50/40 transition">
@@ -2226,9 +2355,8 @@ function renderTab1Results(res) {
               <h4 class="font-extrabold text-slate-800 text-sm">${item.rank ? `#${item.rank} · ` : ""}${esc(item.location)}</h4>
               ${statusPill(item.overall_status)}
             </div>
-            <span class="px-3 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs font-extrabold">${
-              item.total_weighted_score !== null ? item.total_weighted_score + "/10" : "N/A"
-            }</span>
+            <span class="px-3 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs font-extrabold">${item.total_weighted_score !== null ? item.total_weighted_score + "/10" : "N/A"
+        }</span>
           </div>
           <p class="text-xs font-medium text-slate-600">${esc(item.exclusion_or_selection_reason)}</p>
           <details class="bg-white/55 backdrop-blur-md p-3 rounded-2xl border border-white/85 shadow-sm text-xs">
@@ -2311,8 +2439,8 @@ function renderProposalAndSurvey(res) {
   const plan = prop.survey_plan || [];
   $("surveyPlanTableBody").innerHTML = plan.length
     ? plan
-        .map(
-          (p) => `
+      .map(
+        (p) => `
         <tr class="hover:bg-pink-50/40">
           <td class="p-3 font-bold text-slate-800">
             <div>${esc(p.location)}</div>
@@ -2323,8 +2451,8 @@ function renderProposalAndSurvey(res) {
           <td class="p-3"><span class="px-2.5 py-1 bg-orange-50 text-orange-800 border border-orange-200 rounded-xl font-bold text-[11px]">${esc(p.go_no_go_criteria)}</span></td>
           <td class="p-3 font-bold text-pink-700">${esc(p.owner)}<div class="text-[10px] text-slate-400 font-semibold mt-0.5">${esc(p.expected_timeline)}</div></td>
         </tr>`
-        )
-        .join("")
+      )
+      .join("")
     : `<tr><td colspan="5" class="p-6 text-center text-slate-400">${res.analysis_mode === "company_statistics" ? "Chế độ Thống kê tổng hợp công ty — xem đầy đủ ở mục 📄 Báo cáo (BC)." : "Chưa có kế hoạch khảo sát."}</td></tr>`;
 
   if (res.analysis_mode === "company_statistics" || prop.decision_status === "COMPANY_STATISTICS") {
@@ -2405,21 +2533,21 @@ function renderQualityTab(res) {
     const unitNotes = (cs.numeric_highlights || []).filter((n) => n.unit_note);
     $("periodLogList").innerHTML = unitNotes.length
       ? unitNotes
-          .map((n) => `<p class="bg-white/60 backdrop-blur-md p-3 rounded-2xl border border-white shadow-sm"><i class="fa-solid fa-scale-balanced text-orange-600 mr-1.5"></i><strong>${esc(n.table)} · ${esc(n.column)}:</strong> ${esc(n.unit_note)}</p>`)
-          .join("")
+        .map((n) => `<p class="bg-white/60 backdrop-blur-md p-3 rounded-2xl border border-white shadow-sm"><i class="fa-solid fa-scale-balanced text-orange-600 mr-1.5"></i><strong>${esc(n.table)} · ${esc(n.column)}:</strong> ${esc(n.unit_note)}</p>`)
+        .join("")
       : `<p class="text-slate-500 font-bold">Đơn vị số liệu đã đồng nhất, không cần quy đổi.</p>`;
   }
 
   $("conflictLogList").innerHTML = issues.length
     ? issues
-        .map(
-          (it) => `
+      .map(
+        (it) => `
           <div class="p-3 rounded-2xl backdrop-blur-md border shadow-sm transition hover:-translate-y-0.5 ${it.severity === "HIGH" ? "bg-rose-50/75 border-white" : "bg-amber-50/75 border-white"}">
             <div class="font-bold text-slate-800">[${esc(it.location)}] ${esc(it.issue_type)}</div>
             <div class="mt-0.5 text-slate-600">${esc(it.description)}</div>
           </div>`
-        )
-        .join("")
+      )
+      .join("")
     : `<p class="text-pink-700 font-bold"><i class="fa-solid fa-check mr-1.5"></i>Không có thiếu hoặc lệch nguồn.</p>`;
 }
 
@@ -2438,8 +2566,8 @@ function renderAuditTab(res) {
       const hasIo = ev.tool_args || ev.tool_result_summary;
       const ioBox = hasIo
         ? `<details class="mt-1.5"><summary class="cursor-pointer text-pink-600 font-bold font-sans text-[11px]">Xem Input / Output</summary><pre class="mt-1 p-2.5 bg-white/75 backdrop-blur-md rounded-2xl border border-white overflow-x-auto max-h-40 text-[10px] text-slate-700">${esc(
-            JSON.stringify({ args: ev.tool_args, result: ev.tool_result_summary }, null, 2)
-          )}</pre></details>`
+          JSON.stringify({ args: ev.tool_args, result: ev.tool_result_summary }, null, 2)
+        )}</pre></details>`
         : "";
       return `
         <div class="p-3.5 bg-white/55 backdrop-blur-md rounded-2xl border border-white shadow-sm space-y-1 transition hover:-translate-y-0.5">
@@ -2457,20 +2585,19 @@ function renderAuditTab(res) {
 
   $("rulesTraceBox").innerHTML = rules.length
     ? rules
-        .map(
-          (r) => `
+      .map(
+        (r) => `
           <div class="p-3.5 rounded-2xl backdrop-blur-md border shadow-sm transition hover:-translate-y-0.5 ${r.outcome === "FAIL" ? "bg-rose-50/75 border-white" : "bg-white/60 border-white"}">
             <div class="flex justify-between items-center font-bold text-slate-800">
               <span>[${esc(r.rule_id)}] ${esc(r.location)}</span>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border border-white ${
-                r.outcome === "PASS" ? "bg-pink-100/80 text-pink-700" : r.outcome === "FAIL" ? "bg-rose-100/80 text-rose-700" : "bg-orange-100/80 text-orange-800"
-              }">${esc(r.outcome)}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border border-white ${r.outcome === "PASS" ? "bg-pink-100/80 text-pink-700" : r.outcome === "FAIL" ? "bg-rose-100/80 text-rose-700" : "bg-orange-100/80 text-orange-800"
+          }">${esc(r.outcome)}</span>
             </div>
             <div class="text-slate-700 font-semibold mt-1">${esc(r.rule_name)} · Ngưỡng: <code>${esc(r.threshold)}</code></div>
             <div class="text-slate-500 mt-0.5">${esc(r.explanation)}</div>
           </div>`
-        )
-        .join("")
+      )
+      .join("")
     : `<p class="text-slate-500 italic">Chưa có quy tắc kiểm tra.</p>`;
 }
 
@@ -2538,14 +2665,14 @@ function renderMappingModalContent(data) {
 
       const colGrid = meta
         ? `<details class="mt-2"><summary class="cursor-pointer text-pink-600 font-bold">Tùy chỉnh cột (${meta.fields.length})</summary><div class="grid grid-cols-2 gap-2 mt-2">${meta.fields
-            .map(
-              (f) => `
+          .map(
+            (f) => `
             <div>
               <div class="text-[10px] font-mono text-slate-500 font-bold">${esc(f)}</div>
               <select class="cute-input w-full px-2 py-1 rounded-xl col-override-sel" data-table="${esc(tbl)}" data-field="${esc(f)}">${hdrOpts(curCols[f] || "")}</select>
             </div>`
-            )
-            .join("")}</div></details>`
+          )
+          .join("")}</div></details>`
         : "";
 
       return `
@@ -2594,6 +2721,10 @@ async function exportHTML() {
     showToast("Vui lòng chạy Agent trước khi xuất HTML!", true);
     return;
   }
+  if (state.maxApprovedStep < 4) {
+    showToast("⚠️ Vui lòng bấm 'Duyệt bước này' ở Bước 3 trước khi mở khóa xuất báo cáo Bước 4!", true);
+    return;
+  }
   const ok = await askUserConfirm({
     title: "🌐 Xác nhận xuất báo cáo HTML",
     message: "Bạn có muốn tải xuống báo cáo Dashboard tương tác (.html) không?",
@@ -2605,6 +2736,10 @@ async function exportHTML() {
 async function exportCleanedExcel() {
   if (!state.lastResult) {
     showToast("Vui lòng chạy phân tích trước khi tải Excel dữ liệu sạch!", true);
+    return;
+  }
+  if (state.maxApprovedStep < 4) {
+    showToast("⚠️ Vui lòng bấm 'Duyệt bước này' ở Bước 3 trước khi mở khóa xuất báo cáo Bước 4!", true);
     return;
   }
   const ok = await askUserConfirm({
@@ -2620,6 +2755,10 @@ async function exportAnalysisExcel() {
     showToast("Vui lòng chạy phân tích trước khi tải Excel tổng hợp & biểu đồ!", true);
     return;
   }
+  if (state.maxApprovedStep < 4) {
+    showToast("⚠️ Vui lòng bấm 'Duyệt bước này' ở Bước 3 trước khi mở khóa xuất báo cáo Bước 4!", true);
+    return;
+  }
   const ok = await askUserConfirm({
     title: "📊 Xác nhận tải Excel tổng hợp",
     message: "Bạn có muốn tải xuống file Excel phân tích & biểu đồ (.xlsx) không?",
@@ -2631,6 +2770,10 @@ async function exportAnalysisExcel() {
 async function exportReportDocx() {
   if (!state.lastResult) {
     showToast("Vui lòng chạy phân tích trước khi tải Báo cáo Word (.docx)!", true);
+    return;
+  }
+  if (state.maxApprovedStep < 4) {
+    showToast("⚠️ Vui lòng bấm 'Duyệt bước này' ở Bước 3 trước khi mở khóa xuất báo cáo Bước 4!", true);
     return;
   }
   const ok = await askUserConfirm({

@@ -1385,6 +1385,350 @@
     }
   }
 
+  function triggerHaptic(pattern = 10) {
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+        navigator.vibrate(pattern);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  window.triggerHaptic = triggerHaptic;
+
+  function initTechMotion() {
+    // 1. Parallax Scrolling on background depth layers
+    const pEls = Array.from(document.querySelectorAll("[data-parallax]"));
+    if (pEls.length) {
+      let ticking = false;
+      const updateParallax = () => {
+        ticking = false;
+        const y = window.scrollY || 0;
+        pEls.forEach((el) => {
+          const speed = parseFloat(el.dataset.parallax || "0.15");
+          el.style.transform = `translate3d(0, ${(y * speed).toFixed(1)}px, 0)`;
+        });
+      };
+      window.addEventListener("scroll", () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(updateParallax);
+        }
+      }, { passive: true });
+    }
+
+    // 2. Micro-interaction Touch Ripple on buttons & interactive cards
+    document.addEventListener("pointerdown", (e) => {
+      const target = e.target.closest(".cta-primary, .cta-ghost, .cute-btn, .demo-tab-btn");
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 1.9;
+      const wave = document.createElement("span");
+      wave.className = "touch-ripple-wave";
+      wave.style.width = `${size}px`;
+      wave.style.height = `${size}px`;
+      wave.style.left = `${e.clientX - rect.left}px`;
+      wave.style.top = `${e.clientY - rect.top}px`;
+      target.appendChild(wave);
+      setTimeout(() => wave.remove(), 650);
+      triggerHaptic(10);
+    }, { passive: true });
+
+    // 3. 3D Tilt & Flip Cards
+    document.querySelectorAll("[data-tilt-3d]").forEach((card) => {
+      const inner = card.querySelector(".tech-flip-inner");
+      if (!inner) return;
+      card.addEventListener("pointermove", (e) => {
+        if (e.pointerType === "touch" || card.classList.contains("is-flipped")) return;
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        inner.style.transform = `rotateY(${(px * 14).toFixed(2)}deg) rotateX(${(-py * 14).toFixed(2)}deg)`;
+      });
+      card.addEventListener("pointerleave", () => {
+        inner.style.transform = "";
+      });
+      card.addEventListener("click", () => {
+        if (card.dataset.justDragged === "1") return;
+        inner.style.transform = "";
+        card.classList.toggle("is-flipped");
+        triggerHaptic(14);
+      });
+    });
+
+    // 4. Touch & Mouse Drag Carousel with Inertial Momentum
+    const track = $("techCarouselTrack");
+    const dotsBox = $("techCarouselDots");
+    if (track) {
+      const cards = Array.from(track.querySelectorAll(".tech-flip-card"));
+      if (dotsBox && cards.length) {
+        dotsBox.innerHTML = cards.map((_, i) => `<button type="button" class="tech-dot ${i === 0 ? "is-active" : ""}" aria-label="Thẻ ${i + 1}"></button>`).join("");
+        Array.from(dotsBox.children).forEach((dot, i) => {
+          dot.addEventListener("click", () => {
+            track.scrollTo({ left: i * 310, behavior: "smooth" });
+          });
+        });
+        track.addEventListener("scroll", () => {
+          const idx = Math.min(cards.length - 1, Math.round(track.scrollLeft / 305));
+          Array.from(dotsBox.children).forEach((d, i) => d.classList.toggle("is-active", i === idx));
+        }, { passive: true });
+      }
+      $("techSliderPrev")?.addEventListener("click", () => track.scrollBy({ left: -310, behavior: "smooth" }));
+      $("techSliderNext")?.addEventListener("click", () => track.scrollBy({ left: 310, behavior: "smooth" }));
+
+      let isDown = false;
+      let startX = 0;
+      let scrollStart = 0;
+      let velocity = 0;
+      let lastX = 0;
+      let moved = false;
+
+      track.addEventListener("pointerdown", (e) => {
+        isDown = true;
+        moved = false;
+        startX = e.clientX;
+        lastX = e.clientX;
+        scrollStart = track.scrollLeft;
+        velocity = 0;
+        track.classList.add("is-dragging");
+      });
+      window.addEventListener("pointermove", (e) => {
+        if (!isDown) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 6) moved = true;
+        velocity = e.clientX - lastX;
+        lastX = e.clientX;
+        track.scrollLeft = scrollStart - dx;
+      });
+      window.addEventListener("pointerup", () => {
+        if (!isDown) return;
+        isDown = false;
+        track.classList.remove("is-dragging");
+        if (moved) {
+          cards.forEach((c) => {
+            c.dataset.justDragged = "1";
+            setTimeout(() => { c.dataset.justDragged = "0"; }, 120);
+          });
+          // Inertial momentum glide
+          let mom = -velocity * 1.4;
+          const glide = () => {
+            if (Math.abs(mom) < 0.6) return;
+            track.scrollLeft += mom;
+            mom *= 0.92;
+            requestAnimationFrame(glide);
+          };
+          requestAnimationFrame(glide);
+        }
+      });
+    }
+  }
+
+  function initHomeSwipeDeck() {
+    const groups = [
+      ["home"],
+      ["techShowcase", "gioi-thieu"],
+      ["quy-trinh", "demoShowcase"],
+      ["dich-vu", "phan-hoi", "lien-he"],
+    ];
+    let activeDeck = 0;
+
+    window.homeDeckGo = (idx) => {
+      const next = Math.max(0, Math.min(groups.length - 1, Number(idx) || 0));
+      if (next !== activeDeck) triggerHaptic([10, 18, 12]);
+      activeDeck = next;
+      groups.forEach((ids, gi) => {
+        const show = gi === next;
+        ids.forEach((id) => {
+          const el = $(id);
+          if (!el) return;
+          el.classList.toggle("home-deck-hidden", !show);
+          if (show) {
+            el.classList.remove("home-deck-enter");
+            void el.offsetWidth;
+            el.classList.add("home-deck-enter");
+          }
+        });
+      });
+      document.querySelectorAll(".home-deck-tab").forEach((btn) => {
+        btn.classList.toggle("is-active", Number(btn.dataset.deck) === next);
+      });
+    };
+
+    // Map anchor / route nav links to the right swipe page
+    document.querySelectorAll('a[data-nav]').forEach((a) => {
+      a.addEventListener("click", () => {
+        const nav = a.dataset.nav;
+        if (nav === "home") window.homeDeckGo(0);
+        else if (nav === "about") window.homeDeckGo(1);
+        else if (nav === "how") window.homeDeckGo(2);
+        else if (nav === "service" || nav === "reviews" || nav === "contact") window.homeDeckGo(3);
+      });
+    });
+
+    // Touch swipe left/right on #scene0 to switch pages cleanly
+    const s0 = $("scene0");
+    if (s0) {
+      let sx = 0;
+      let sy = 0;
+      s0.addEventListener("touchstart", (e) => {
+        if (e.target.closest("#techCarouselTrack, #heroSlider, input, textarea, select")) return;
+        sx = e.touches[0].clientX;
+        sy = e.touches[0].clientY;
+      }, { passive: true });
+      s0.addEventListener("touchend", (e) => {
+        if (!sx) return;
+        const dx = e.changedTouches[0].clientX - sx;
+        const dy = e.changedTouches[0].clientY - sy;
+        sx = 0;
+        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          window.homeDeckGo(dx < 0 ? activeDeck + 1 : activeDeck - 1);
+        }
+      }, { passive: true });
+    }
+
+    window.homeDeckGo(0);
+  }
+
+  function initInteractiveTechFX() {
+    // 1. WebGL Liquid Distortion Shader (60fps zero-dependency fragment shader)
+    const canvas = $("webglLiquidCanvas");
+    if (canvas) {
+      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (gl) {
+        const resize = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        };
+        resize();
+        window.addEventListener("resize", resize, { passive: true });
+
+        const vsSrc = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+        const fsSrc = `
+          precision mediump float;
+          uniform vec2 u_res;
+          uniform vec2 u_mouse;
+          uniform float u_time;
+          uniform float u_ripple;
+          void main(){
+            vec2 uv = gl_FragCoord.xy / u_res;
+            float d = distance(uv, u_mouse);
+            float wave = sin(d * 28.0 - u_time * 4.2) * exp(-d * 5.5) * u_ripple;
+            vec2 disp = uv + normalize(uv - u_mouse + 0.0001) * wave * 0.04;
+            float glow = smoothstep(0.45, 0.0, distance(disp, vec2(0.5 + 0.15*sin(u_time*0.4), 0.5 + 0.12*cos(u_time*0.3))));
+            vec3 c1 = vec3(1.0, 0.88, 0.94);
+            vec3 c2 = vec3(0.99, 0.72, 0.85);
+            vec3 col = mix(c1, c2, glow + wave * 1.4);
+            gl_FragColor = vec4(col, 0.36);
+          }`;
+        const compile = (type, src) => {
+          const s = gl.createShader(type);
+          gl.shaderSource(s, src);
+          gl.compileShader(s);
+          return s;
+        };
+        const prog = gl.createProgram();
+        gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSrc));
+        gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSrc));
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(prog, "p");
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+        const uRes = gl.getUniformLocation(prog, "u_res");
+        const uMouse = gl.getUniformLocation(prog, "u_mouse");
+        const uTime = gl.getUniformLocation(prog, "u_time");
+        const uRipple = gl.getUniformLocation(prog, "u_ripple");
+
+        let mx = 0.5, my = 0.5, ripple = 0.15;
+        window.addEventListener("pointermove", (e) => {
+          mx = e.clientX / Math.max(1, window.innerWidth);
+          my = 1.0 - e.clientY / Math.max(1, window.innerHeight);
+          ripple = Math.min(1.2, ripple + 0.18);
+        }, { passive: true });
+        window.addEventListener("pointerdown", () => { ripple = 1.3; }, { passive: true });
+
+        const startT = performance.now();
+        const render = (now) => {
+          ripple *= 0.94;
+          gl.uniform2f(uRes, canvas.width, canvas.height);
+          gl.uniform2f(uMouse, mx, my);
+          gl.uniform1f(uTime, (now - startT) / 1000);
+          gl.uniform1f(uRipple, ripple);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+          requestAnimationFrame(render);
+        };
+        requestAnimationFrame(render);
+      }
+    }
+
+    // 2. Flashlight Reveal Mode ("Đèn pin trong bóng tối")
+    const flashEl = $("flashlightOverlay");
+    window.toggleFlashlightMode = () => {
+      if (!flashEl) return;
+      const on = flashEl.classList.toggle("is-active");
+      triggerHaptic(16);
+      toast(on ? "🔦 Đã bật chế độ Đèn pin trong bóng tối!" : "💡 Đã tắt chế độ Đèn pin.");
+    };
+    window.addEventListener("pointermove", (e) => {
+      if (flashEl && flashEl.classList.contains("is-active")) {
+        flashEl.style.setProperty("--fx", `${e.clientX}px`);
+        flashEl.style.setProperty("--fy", `${e.clientY}px`);
+      }
+    }, { passive: true });
+
+    // 3. Non-linear Orbital Compass Nav
+    window.toggleOrbitalNav = (force) => {
+      const wrap = $("orbitalNavWrap");
+      if (!wrap) return;
+      const next = typeof force === "boolean" ? force : !wrap.classList.contains("is-open");
+      wrap.classList.toggle("is-open", next);
+      triggerHaptic(12);
+    };
+
+    // 4. Speed-Reactive UI (Swipe velocity -> inertial skew + motion blur)
+    const s0 = $("scene0");
+    if (s0) {
+      s0.classList.add("speed-reactive-skew");
+      let lastX = 0, lastT = 0, resetTimer = null;
+      window.addEventListener("pointermove", (e) => {
+        const now = performance.now();
+        if (lastT > 0) {
+          const dt = Math.max(8, now - lastT);
+          const vx = (e.clientX - lastX) / dt;
+          if (Math.abs(vx) > 1.2) {
+            const skew = Math.max(-3.5, Math.min(3.5, vx * 1.1));
+            const blur = Math.min(1.6, Math.abs(vx) * 0.35);
+            s0.style.setProperty("--swipe-skew", `${skew.toFixed(2)}deg`);
+            s0.style.setProperty("--swipe-blur", `${blur.toFixed(2)}px`);
+            clearTimeout(resetTimer);
+            resetTimer = setTimeout(() => {
+              s0.style.setProperty("--swipe-skew", "0deg");
+              s0.style.setProperty("--swipe-blur", "0px");
+            }, 140);
+          }
+        }
+        lastX = e.clientX;
+        lastT = now;
+      }, { passive: true });
+    }
+
+    // 5. Gyroscope 3D Tilt (DeviceOrientation API on mobile/tablet)
+    window.addEventListener("deviceorientation", (e) => {
+      if (e.gamma == null || e.beta == null) return;
+      const rx = Math.max(-8, Math.min(8, (e.beta - 45) * 0.18));
+      const ry = Math.max(-8, Math.min(8, e.gamma * 0.18));
+      document.querySelectorAll(".hero-visual .mock-window, #techShowcase .tech-flip-card:not(.is-flipped) .tech-flip-inner").forEach((el) => {
+        el.style.transform = `rotateX(${-rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+      });
+    }, { passive: true });
+  }
+
   /* ------------------------------------------------------------------ */
   /* Boot                                                                */
   /* ------------------------------------------------------------------ */
@@ -1411,6 +1755,9 @@
     const desk = bindSearch("siteSearchInput", "siteSearchResults");
     bindSearch("mobileSearchInput", "mobileSearchResults");
     initReveal();
+    initTechMotion();
+    initHomeSwipeDeck();
+    initInteractiveTechFX();
     initContactForm();
     initChat();
     onScroll();

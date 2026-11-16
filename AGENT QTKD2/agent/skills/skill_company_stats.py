@@ -6,6 +6,7 @@ import json
 import re
 import statistics
 from collections import Counter, defaultdict
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..audit import AuditLogger
@@ -15,8 +16,87 @@ from .bi_analyst_stages import build_7stage_bi_pipeline_and_report
 _DATE_RE = re.compile(r"^\d{4}[-/]\d{1,2}[-/]\d{1,2}$|^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}$")
 _CODE_RE = re.compile(r"^[A-Za-z]{1,6}[-_]\d+$")
 _PHONE_RE = re.compile(r"^0\d{8,11}$")
-_NON_METRIC_COL_HINTS = ("id", "ma_", "code", "sdt", "phone", "ngay", "date", "thoi_gian", "stt", "row")
+_NON_METRIC_COL_HINTS = (
+    "id", "ma_", "code", "sdt", "so_dt", "dien_thoai", "phone", "ngay", "date", "thoi_gian",
+    "time", "birthday", "sinh_nhat", "stt", "row", "card", "cccd", "cmnd", "gender",
+    "gioi_tinh", "has_", "is_", "loanid", "fromdate", "todate", "checktime",
+)
 _NON_GROUP_COL_HINTS = _NON_METRIC_COL_HINTS + ("ghi_chu", "note", "mo_ta", "description", "nhan_xet", "email", "dia_chi", "address")
+_DATE_COL_HINTS = ("ngay", "date", "birthday", "sinh_nhat", "checktime", "created_at", "updated_at", "thoi_diem")
+_PHONE_COL_HINTS = ("dien_thoai", "sdt", "so_dt", "phone", "mobile", "hotline")
+
+_WORD_NUMBERS = {
+    "ten thousand": "10000", "twenty thousand": "20000", "fifty thousand": "50000",
+    "one hundred thousand": "100000", "one million": "1000000", "ten million": "10000000",
+}
+
+
+def _is_non_metric_col(col_name: str) -> bool:
+    nk = norm_key(col_name)
+    if not nk:
+        return False
+    tokens = nk.split("_")
+    if "id" in tokens or nk.endswith("id") or nk.startswith("ma_"):
+        return True
+    if any(h in nk for h in ("date", "time", "ngay", "birthday", "sinh_nhat", "dien_thoai", "so_dt", "sdt", "phone", "cardnumber", "card_number", "cccd", "cmnd", "gender", "gioi_tinh")):
+        return True
+    if nk.startswith(("has", "is_", "stt", "code")) or nk in ("stt", "row", "hasbaddebt", "haslatepayment"):
+        return True
+    return False
+
+
+def _normalize_cell_by_col(col_name: str, val: str, col_anomaly_counts: Dict[Tuple[str, str], int]) -> Tuple[str, bool]:
+    """Normalize Excel serial dates, DD/MM/YYYY dates, phones, and word numbers during cleaning."""
+    if not val:
+        return "", False
+    nk = norm_key(col_name)
+    changed = False
+
+    # 1. English word numbers like "Ten thousand"
+    low = val.lower().strip()
+    if low in _WORD_NUMBERS:
+        col_anomaly_counts[("TEXT_IN_NUM", col_name)] = col_anomaly_counts.get(("TEXT_IN_NUM", col_name), 0) + 1
+        return _WORD_NUMBERS[low], True
+
+    # 2. Phone column normalization (restore stripped leading 0 on 9-digit VN mobile)
+    if any(h in nk for h in _PHONE_COL_HINTS):
+        digits = re.sub(r"\D", "", val)
+        if len(digits) == 9 and digits[0] in ("3", "5", "7", "8", "9"):
+            return "0" + digits, True
+
+    # 3. Date / Timestamp columns
+    if any(h in nk for h in _DATE_COL_HINTS) and "da_song" not in nk:
+        if re.fullmatch(r"\d{5}(?:\.\d+)?", val):
+            serial = float(val)
+            if 15000 <= serial <= 80000:
+                dt = datetime(1899, 12, 30) + timedelta(days=serial)
+                out = dt.strftime("%Y-%m-%d %H:%M") if (serial % 1) > 0.0001 else dt.strftime("%Y-%m-%d")
+                return out, True
+        m_iso = re.fullmatch(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", val)
+        if m_iso:
+            y, mo, da = int(m_iso.group(1)), int(m_iso.group(2)), int(m_iso.group(3))
+            try:
+                dt = datetime(y, mo, da)
+                norm_d = dt.strftime("%Y-%m-%d")
+                return norm_d, (norm_d != val)
+            except ValueError:
+                col_anomaly_counts[("INVALID_DATE", col_name)] = col_anomaly_counts.get(("INVALID_DATE", col_name), 0) + 1
+                return f"{val} (lỗi ngày)", True
+        m_dmy = re.fullmatch(r"(\d{1,2})[-/](\d{1,2})[-/](\d{4})", val)
+        if m_dmy:
+            da, mo, y = int(m_dmy.group(1)), int(m_dmy.group(2)), int(m_dmy.group(3))
+            try:
+                dt = datetime(y, mo, da)
+                return dt.strftime("%Y-%m-%d"), True
+            except ValueError:
+                col_anomaly_counts[("INVALID_DATE", col_name)] = col_anomaly_counts.get(("INVALID_DATE", col_name), 0) + 1
+                return f"{val} (lỗi ngày)", True
+
+    # 4. Flag negative count anomalies (e.g., NumberOfLoans = -1)
+    if re.fullmatch(r"-\d+(?:\.\d+)?", val) and any(k in nk for k in ("number", "so_luong", "count", "tuoi", "age", "salary", "tien", "amount")):
+        col_anomaly_counts[("NEGATIVE_VALUE", col_name)] = col_anomaly_counts.get(("NEGATIVE_VALUE", col_name), 0) + 1
+
+    return val, changed
 
 _UNIT_RE = re.compile(r"(tỷ|tỉ|ty|triệu|trieu|nghìn|nghin|ngàn|ngan)\s*(?:vnd|vnđ|đ|đồng|dong)?\s*$", re.I)
 _UNIT_RANK = {"ty": 1_000_000, "trieu": 1_000, "nghin": 1}
@@ -57,7 +137,10 @@ DOMAIN_HINTS: Dict[str, Tuple[str, Tuple[str, ...]]] = {
     ),
 }
 
-_REVENUE_KEYS = ("doanh_thu", "doanh_so", "revenue", "sales", "thu_nhap", "income", "tong_thu")
+_REVENUE_KEYS = (
+    "doanh_thu", "doanh_so", "revenue", "sales", "thu_nhap", "income", "tong_thu",
+    "tien_giai_ngan", "so_tien_dang_ky_vay_ban_dau", "sotiendkvaybandau", "tiengiaingan", "thanh_tien", "tong_tien",
+)
 _COST_KEYS = ("chi_phi", "cost", "expense", "gia_von", "tong_chi", "thuc_chi", "spent")
 _PROFIT_KEYS = ("loi_nhuan", "profit", "ebitda", "lai_rong", "net_income")
 _PROGRESS_KEYS = ("tien_do", "progress", "hoan_thanh", "completion", "kpi", "ty_le_dat", "dat_duoc")
@@ -107,8 +190,7 @@ def _extract_stat_number(col_name: str, raw_val: Any) -> Optional[float]:
         return None
     if _DATE_RE.match(txt) or _CODE_RE.match(txt) or _PHONE_RE.match(txt):
         return None
-    nk = norm_key(col_name)
-    if any(nk == h or nk.startswith(h) for h in _NON_METRIC_COL_HINTS):
+    if _is_non_metric_col(col_name):
         return None
     if re.search(r"[a-zA-Z]", txt) and not re.search(
         r"(ty|tỷ|tỉ|trieu|triệu|nghin|nghìn|ngan|ngàn|vnd|vnđ|usd|đồng|dong|%|gio|giờ|ngay|ngày|thang|tháng|nam|năm|cai|cái|don|đơn|sp|kh|nv|m2|kg)$",
@@ -721,6 +803,7 @@ def run_company_statistics_pipeline(
     empty_rows_removed = normalized_cells = unit_conversions = missing_rows_removed = trimmed_cells = 0
     all_numeric: List[Dict[str, Any]] = []
     all_categories: List[Dict[str, Any]] = []
+    format_anomalies: List[Dict[str, Any]] = []
 
     for s_name, rows in raw_sheets.items():
         if not rows:
@@ -735,6 +818,7 @@ def run_company_statistics_pipeline(
         kept: List[Dict[str, Any]] = []
         sheet_dropped = 0
         sheet_missing_cells = 0
+        col_anomaly_counts: Dict[Tuple[str, str], int] = {}
         for idx, r in enumerate(rows, start=1):
             clean_vals: Dict[str, str] = {}
             non_empty = 0
@@ -746,6 +830,10 @@ def run_company_statistics_pipeline(
                     trimmed_cells += 1
                 if s_v.lower() in {"nan", "none", "null"}:
                     s_v = ""
+                if s_v:
+                    s_v, did_norm = _normalize_cell_by_col(h, s_v, col_anomaly_counts)
+                    if did_norm:
+                        normalized_cells += 1
                 if s_v != "":
                     non_empty += 1
                 clean_vals[h] = s_v
@@ -786,6 +874,22 @@ def run_company_statistics_pipeline(
 
         cleaned_sheets[s_name] = kept
         total_rows_clean += len(kept)
+        for (atype, acol), acnt in col_anomaly_counts.items():
+            label_vi = (
+                "ngày lịch không hợp lệ (ví dụ: 30/02)"
+                if atype == "INVALID_DATE"
+                else "giá trị âm bất thường trong cột số lượng/tiền"
+                if atype == "NEGATIVE_VALUE"
+                else "chữ viết thay cho số (đã tự quy đổi)"
+            )
+            format_anomalies.append(
+                {
+                    "type": atype,
+                    "sheet": s_name,
+                    "column": acol,
+                    "detail": f"Phát hiện {acnt} ô {label_vi} ở cột '{acol}'.",
+                }
+            )
         source_file = kept[0].get("_source_file") or s_name
 
         # Key:Value metrics from Word / PDF / text are a metric list, not a data table.
@@ -892,7 +996,7 @@ def run_company_statistics_pipeline(
     )
 
     unit_conversions_log: List[Dict[str, str]] = []
-    quality_issues: List[Dict[str, Any]] = []
+    quality_issues: List[Dict[str, Any]] = list(format_anomalies)
     for ns in all_numeric:
         if ns.get("unit_note"):
             unit_conversions_log.append(

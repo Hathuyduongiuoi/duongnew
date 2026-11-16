@@ -128,8 +128,8 @@ def _build_xlsx_bytes(sheets_spec: List[Dict[str, Any]]) -> bytes:
         styles_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <fonts count="2">
-    <font><sz val="11"/><color rgb="FF1E293B"/><name val="Calibri"/></font>
-    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+    <font><sz val="11"/><color rgb="FF1E293B"/><name val="Arial"/></font>
+    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>
   </fonts>
   <fills count="3">
     <fill><patternFill patternType="none"/></fill>
@@ -523,19 +523,19 @@ def export_report_docx_bytes(session_resp: Dict[str, Any]) -> bytes:
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
     <w:name w:val="Normal"/>
-    <w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="22"/></w:rPr>
   </w:style>
   <w:style w:type="paragraph" w:styleId="Heading1">
     <w:name w:val="heading 1"/>
-    <w:rPr><w:b/><w:color w:val="BE185D"/><w:sz w:val="32"/></w:rPr>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:color w:val="BE185D"/><w:sz w:val="32"/></w:rPr>
   </w:style>
   <w:style w:type="paragraph" w:styleId="Heading2">
     <w:name w:val="heading 2"/>
-    <w:rPr><w:b/><w:color w:val="9D174D"/><w:sz w:val="26"/></w:rPr>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:color w:val="9D174D"/><w:sz w:val="26"/></w:rPr>
   </w:style>
   <w:style w:type="paragraph" w:styleId="Heading3">
     <w:name w:val="heading 3"/>
-    <w:rPr><w:b/><w:color w:val="334155"/><w:sz w:val="24"/></w:rPr>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:color w:val="334155"/><w:sz w:val="24"/></w:rPr>
   </w:style>
 </w:styles>"""
 

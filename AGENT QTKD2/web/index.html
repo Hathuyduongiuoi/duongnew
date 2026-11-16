@@ -21,10 +21,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=20261116f" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -56,30 +56,83 @@
 <body class="min-h-screen flex flex-col">
   <a href="#mainContent" class="skip-link">Bỏ qua điều hướng</a>
 
-  <!-- Màn hình Chào mừng mở đầu (Bấm Bắt đầu để vào Web hoạt động chính) -->
-  <div id="welcomeSplash" class="welcome-splash no-print" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-    <div class="welcome-card floating-shell rounded-[36px] p-7 sm:p-10 max-w-lg w-full text-center space-y-5 relative overflow-hidden">
-      <img src="/avatar.jpg" alt="Hà Thuỳ Dương - Data Analyst &amp; BI"
-        class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full object-cover shadow-xl shadow-pink-200 border-4 border-white float-levitate" />
-      <div class="space-y-2.5">
-        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/85 border border-white text-[11px] font-extrabold text-pink-600 shadow-sm">
-          <span>👋</span><span data-i18n="splash.kicker">Hà Thuỳ Dương · Data Analyst &amp; BI</span>
-        </span>
-        <h2 id="welcomeTitle" class="text-2xl sm:text-3xl font-extrabold text-slate-800 leading-tight" data-i18n="splash.title">
-          Chào mừng bạn đến với Web của <span class="pink-underline text-pink-600">Hà Thuỳ Dương</span>
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed" data-i18n="splash.desc">
-          Hệ thống tiếp nhận, làm sạch, phân tích dữ liệu đa chiều và xuất Dashboard, Excel, Báo cáo Word chuyên nghiệp.
-        </p>
+  <!-- Màn hình Chào mừng mở đầu (Executive DataLens Studio Glass Card) -->
+  <div id="welcomeSplash" class="welcome-splash tech-grid-bg no-print" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="welcome-card welcome-pro-card floating-shell rounded-[34px] max-w-2xl w-full relative overflow-hidden">
+      <div class="tech-scanline" aria-hidden="true"></div>
+
+      <!-- Studio Top Chrome -->
+      <div class="px-6 py-3.5 bg-white/55 border-b border-white/80 flex items-center justify-between gap-2 relative z-10">
+        <div class="flex items-center gap-2.5">
+          <div class="nb-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="text-[11px] font-extrabold tracking-wide text-slate-700">DataLens Studio · Enterprise BI</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50/90 border border-emerald-200 text-[10px] font-extrabold tracking-wider uppercase text-emerald-700">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+          <span>AI v2.5 Online</span>
+        </div>
       </div>
-      <div class="flex flex-wrap justify-center gap-1.5 text-[10.5px] font-extrabold text-pink-800">
-        <span class="px-2.5 py-1 rounded-full bg-white/80 border border-white">📊 Dashboard KPI</span>
-        <span class="px-2.5 py-1 rounded-full bg-white/80 border border-white">🧹 Làm sạch dữ liệu</span>
-        <span class="px-2.5 py-1 rounded-full bg-white/80 border border-white">📄 Báo cáo Word / Excel</span>
+
+      <!-- Main Editorial Body -->
+      <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+        <!-- Left Identity & Telemetry -->
+        <div class="md:col-span-5 flex flex-col items-center text-center space-y-3 welcome-stagger-1">
+          <div class="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
+            <span class="tech-hud-ring tech-hud-ring-outer" aria-hidden="true"></span>
+            <span class="tech-hud-ring tech-hud-ring-inner" aria-hidden="true"></span>
+            <img src="/avatar.jpg" alt="Hà Thuỳ Dương - Data Analyst &amp; BI"
+              class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover shadow-xl shadow-pink-200/80 border-4 border-white float-levitate relative z-10" />
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-pink-100 text-[11px] font-extrabold text-pink-700 shadow-sm">
+            <i class="fa-solid fa-certificate text-pink-500"></i>
+            <span data-i18n="splash.kicker">Hà Thuỳ Dương · Data Analyst &amp; BI</span>
+          </span>
+          <div class="w-full p-2.5 rounded-2xl bg-white/75 border border-white grid grid-cols-3 gap-1 text-[10px] font-extrabold text-slate-700 shadow-sm">
+            <div><span class="block text-pink-600 text-xs">4 Bước</span>Chuẩn xác</div>
+            <div class="border-x border-pink-100"><span class="block text-emerald-600 text-xs">10+</span>Định dạng</div>
+            <div><span class="block text-orange-500 text-xs">100%</span>Minh bạch</div>
+          </div>
+        </div>
+
+        <!-- Right Welcome Value Prop & 4-Step Flow -->
+        <div class="md:col-span-7 text-center md:text-left space-y-4 welcome-stagger-2">
+          <div class="space-y-2">
+            <h2 id="welcomeTitle" class="text-2xl sm:text-[26px] font-extrabold text-slate-800 leading-tight tracking-tight" data-i18n="splash.title">
+              Chào mừng bạn đến với Web của <span class="pink-underline text-pink-600">Hà Thuỳ Dương</span>
+            </h2>
+            <p class="text-xs sm:text-[13px] text-slate-600 font-semibold leading-relaxed" data-i18n="splash.desc">
+              Nền tảng trợ lý dữ liệu AI giúp tiếp nhận, kiểm tra định dạng, làm sạch minh bạch và xuất Dashboard KPI, Excel, Báo cáo Word chuẩn doanh nghiệp.
+            </p>
+          </div>
+
+          <!-- Compact 4-Step Studio Preview -->
+          <div class="grid grid-cols-2 gap-2 text-left text-[11px] font-bold text-slate-700">
+            <div class="p-2.5 rounded-2xl bg-white/80 border border-white flex items-center gap-2 shadow-sm">
+              <span class="w-6 h-6 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center font-black text-[10px] shrink-0">01</span>
+              <span>Kết nối &amp; Trao đổi</span>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-white/80 border border-white flex items-center gap-2 shadow-sm">
+              <span class="w-6 h-6 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-black text-[10px] shrink-0">02</span>
+              <span>Làm sạch &amp; Duyệt</span>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-white/80 border border-white flex items-center gap-2 shadow-sm">
+              <span class="w-6 h-6 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-[10px] shrink-0">03</span>
+              <span>Dashboard BI 3D</span>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-white/80 border border-white flex items-center gap-2 shadow-sm">
+              <span class="w-6 h-6 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-black text-[10px] shrink-0">04</span>
+              <span>Xuất Word · Excel</span>
+            </div>
+          </div>
+
+          <div class="pt-1 flex flex-col sm:flex-row items-center gap-3">
+            <button type="button" id="btnEnterSite" onclick="enterMainSite(event)" class="cta-primary w-full sm:w-auto justify-center !px-7 !py-3 !text-sm shadow-xl">
+              <span data-i18n="splash.btn">Bắt đầu trải nghiệm</span><i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <span class="text-[11px] font-bold text-slate-400">🔒 Bảo mật Session · Phân quyền riêng</span>
+          </div>
+        </div>
       </div>
-      <button type="button" id="btnEnterSite" onclick="enterMainSite(event)" class="cta-primary w-full sm:w-auto justify-center !px-8 !py-3.5 !text-sm shadow-xl">
-        <span data-i18n="splash.btn">Bắt đầu</span><i class="fa-solid fa-arrow-right"></i>
-      </button>
     </div>
   </div>
 
@@ -88,10 +141,36 @@
   <div id="scrollProgress" class="scroll-progress no-print" aria-hidden="true"></div>
   <div id="pageSweep" class="page-sweep no-print" aria-hidden="true"></div>
 
-  <!-- Ambient glass orbs -->
-  <div class="bg-orb bg-orb-1 no-print"></div>
-  <div class="bg-orb bg-orb-2 no-print"></div>
-  <div class="bg-orb bg-orb-3 no-print"></div>
+  <!-- WebGL Liquid Shader Canvas + Flashlight Reveal Overlay -->
+  <canvas id="webglLiquidCanvas" class="webgl-liquid-canvas no-print" aria-hidden="true"></canvas>
+  <div id="flashlightOverlay" class="flashlight-overlay no-print" aria-hidden="true"></div>
+
+  <!-- Nút điều khiển Hiệu ứng Công nghệ nổi (Đèn pin & La bàn Phi tuyến tính) -->
+  <div id="orbitalNavWrap" class="orbital-nav-wrap no-print">
+    <div id="orbitalNavRing" class="orbital-nav-ring" aria-label="Điều hướng vòng xoay la bàn">
+      <button type="button" class="orbital-item" style="--ang:-90deg" onclick="homeDeckGo(0); toggleOrbitalNav(false)" title="Trang chủ">🏠</button>
+      <button type="button" class="orbital-item" style="--ang:-30deg" onclick="homeDeckGo(1); toggleOrbitalNav(false)" title="Công nghệ 3D">⚡</button>
+      <button type="button" class="orbital-item" style="--ang:30deg" onclick="homeDeckGo(2); toggleOrbitalNav(false)" title="Demo & Quy trình">🧪</button>
+      <button type="button" class="orbital-item" style="--ang:90deg" onclick="homeDeckGo(3); toggleOrbitalNav(false)" title="Dịch vụ & Liên hệ">💼</button>
+      <button type="button" class="orbital-item !bg-pink-500 !text-white" style="--ang:150deg" onclick="goToScene(1, 'dive'); toggleOrbitalNav(false)" title="Tải dữ liệu khách hàng lên">📤</button>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" id="btnOrbitalToggle" onclick="toggleOrbitalNav()" class="cute-btn w-10 h-10 rounded-full bg-white/90 border border-pink-200 text-pink-600 shadow-lg flex items-center justify-center" title="Vòng xoay La bàn">
+        <i class="fa-solid fa-compass"></i>
+      </button>
+      <button type="button" id="btnFlashlightToggle" onclick="toggleFlashlightMode()" class="cute-btn w-10 h-10 rounded-full bg-white/90 border border-pink-200 text-amber-500 shadow-lg flex items-center justify-center" title="Chế độ Đèn pin trong bóng tối">
+        <i class="fa-solid fa-flashlight fa-lightbulb"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Ambient glass orbs & slow breathing geometric shapes -->
+  <div class="ambient-mesh no-print" aria-hidden="true"></div>
+  <div class="ambient-geo ambient-geo-1 no-print" aria-hidden="true"></div>
+  <div class="ambient-geo ambient-geo-2 no-print" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb-1 no-print" data-parallax="0.18"></div>
+  <div class="bg-orb bg-orb-2 no-print" data-parallax="-0.22"></div>
+  <div class="bg-orb bg-orb-3 no-print" data-parallax="0.28"></div>
   <span class="bg-twinkle text-pink-400 text-lg no-print" style="top:10%;left:7%;animation-delay:0s;">✦</span>
   <span class="bg-twinkle text-orange-300 text-base no-print" style="top:16%;right:7%;animation-delay:1s;">✨</span>
   <span class="bg-twinkle text-rose-300 text-lg no-print" style="bottom:9%;left:11%;animation-delay:1.8s;">✿</span>
@@ -315,7 +394,16 @@
     <!-- =================================================================== -->
     <!-- SCENE 0: TRANG CHỦ (Cấp 1) - Banner · Giới thiệu · Dịch vụ · Quy trình · Phản hồi · Liên hệ -->
     <!-- =================================================================== -->
-    <section id="scene0" class="spatial-scene scene-active flex-col w-full max-w-7xl gap-10 sm:gap-14 pt-2 pb-4">
+    <section id="scene0" class="spatial-scene scene-active flex-col w-full max-w-7xl gap-6 sm:gap-8 pt-2 pb-4">
+
+      <!-- Thanh điều hướng Vuốt chạm gọn gàng (1 màn hình / 1 phần, không rườm rà) -->
+      <div id="homeDeckNav" class="home-deck-nav mx-auto flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-full glass-card no-print" role="tablist" aria-label="Vuốt chuyển phần">
+        <button type="button" class="home-deck-tab is-active" onclick="homeDeckGo(0)" data-deck="0">🏠 Trang chủ</button>
+        <button type="button" class="home-deck-tab" onclick="homeDeckGo(1)" data-deck="1">⚡ Công nghệ 3D</button>
+        <button type="button" class="home-deck-tab" onclick="homeDeckGo(2)" data-deck="2">🧪 Demo &amp; Quy trình</button>
+        <button type="button" class="home-deck-tab" onclick="homeDeckGo(3)" data-deck="3">💼 Dịch vụ &amp; Liên hệ</button>
+        <button type="button" class="home-deck-tab !bg-gradient-to-r !from-pink-500 !to-orange-400 !text-white shadow" onclick="goToScene(1, 'dive')">📤 Tải dữ liệu khách hàng lên</button>
+      </div>
 
       <!-- Banner / Slider -->
       <div id="home" class="w-full">
@@ -481,6 +569,143 @@
               class="fa-solid fa-file-pdf"></i> PDF</b><b><i class="fa-solid fa-table"></i> Google Sheets</b><b><i
               class="fa-solid fa-feather"></i> Lark Base</b><b><i class="fa-solid fa-robot"></i> Gemini · OpenAI</b>
         </div>
+      </div>
+
+      <!-- Băng chuyền Vuốt chạm có Quán tính & Thẻ Lật 3D Nghiêng theo chuột -->
+      <div id="techShowcase" class="w-full reveal space-y-4" data-no-swipe>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="section-head !mb-0">
+            <span class="section-kicker">⚡ Trải nghiệm Công nghệ 3D</span>
+            <h2 class="section-title">Vuốt băng chuyền &amp; Chạm lật thẻ 3D</h2>
+            <p class="section-sub">Kéo/vuốt ngang êm ái có quán tính · Di chuột để nghiêng 3D · Chạm vào thẻ để lật xem chi tiết kỹ thuật.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="techSliderPrev" class="cute-btn w-9 h-9 rounded-full bg-white/90 border border-pink-200 text-pink-600 flex items-center justify-center shadow-sm" aria-label="Thẻ trước">
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <button type="button" id="techSliderNext" class="cute-btn w-9 h-9 rounded-full bg-white/90 border border-pink-200 text-pink-600 flex items-center justify-center shadow-sm" aria-label="Thẻ sau">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="techCarouselTrack" class="tech-carousel-track" tabindex="0" aria-label="Băng chuyền tính năng 3D">
+          <!-- Card 1 -->
+          <div class="tech-flip-card" data-tilt-3d data-flip-card>
+            <div class="tech-flip-inner">
+              <div class="tech-flip-face tech-flip-front floating-shell">
+                <span class="tech-card-tag">01 · INGEST &amp; CLEAN</span>
+                <div class="tech-card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h3>AI Làm Sạch Thông Minh</h3>
+                <p>Khử trùng lặp, chuẩn hóa ngày &amp; số, phát hiện ngoại lai trước khi phân tích.</p>
+                <span class="tech-flip-hint">Chạm để lật mặt sau ↻</span>
+              </div>
+              <div class="tech-flip-face tech-flip-back">
+                <span class="tech-card-tag !bg-white/20 !text-white">CHI TIẾT KỸ THUẬT</span>
+                <h4>Cơ chế kiểm soát 2 lớp</h4>
+                <ul>
+                  <li>✓ Hỏi xác nhận người dùng trước khi làm sạch</li>
+                  <li>✓ Phát hiện thiếu cột / sai kiểu dữ liệu</li>
+                  <li>✓ Xuất riêng file Excel dữ liệu đã làm sạch</li>
+                </ul>
+                <span class="tech-flip-hint !text-pink-100">Chạm để lật lại ↺</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="tech-flip-card" data-tilt-3d data-flip-card>
+            <div class="tech-flip-inner">
+              <div class="tech-flip-face tech-flip-front floating-shell">
+                <span class="tech-card-tag">02 · MULTI-DIM BI</span>
+                <div class="tech-card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <h3>Phân Tích Đa Chiều</h3>
+                <p>Tổng hợp KPI, phân khúc khách hàng, xếp hạng &amp; biểu đồ tương tác tức thì.</p>
+                <span class="tech-flip-hint">Chạm để lật mặt sau ↻</span>
+              </div>
+              <div class="tech-flip-face tech-flip-back">
+                <span class="tech-card-tag !bg-white/20 !text-white">BI ENGINE</span>
+                <h4>Quy trình 7 bước chuẩn BI</h4>
+                <ul>
+                  <li>✓ Tự động tính Tổng, Trung bình, Trung vị, σ</li>
+                  <li>✓ Gợi ý hành động &amp; cảnh báo rủi ro</li>
+                  <li>✓ Kết hợp Gemini AI trả lời nhanh đa ngôn ngữ</li>
+                </ul>
+                <span class="tech-flip-hint !text-pink-100">Chạm để lật lại ↺</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="tech-flip-card" data-tilt-3d data-flip-card>
+            <div class="tech-flip-inner">
+              <div class="tech-flip-face tech-flip-front floating-shell">
+                <span class="tech-card-tag">03 · OMNI INPUT</span>
+                <div class="tech-card-icon"><i class="fa-solid fa-database"></i></div>
+                <h3>Đọc Mọi Định Dạng</h3>
+                <p>Hỗ trợ Excel, CSV, Word, PDF, JSON, ZIP, Google Sheets &amp; Lark Base.</p>
+                <span class="tech-flip-hint">Chạm để lật mặt sau ↻</span>
+              </div>
+              <div class="tech-flip-face tech-flip-back">
+                <span class="tech-card-tag !bg-white/20 !text-white">PARSERS</span>
+                <h4>Tự động nhận diện cấu trúc</h4>
+                <ul>
+                  <li>✓ Đọc nhiều sheet / nhiều file cùng lúc</li>
+                  <li>✓ Hỗ trợ bảng trong file Word &amp; PDF</li>
+                  <li>✓ Kéo thả trực tiếp hoặc dán link Online</li>
+                </ul>
+                <span class="tech-flip-hint !text-pink-100">Chạm để lật lại ↺</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="tech-flip-card" data-tilt-3d data-flip-card>
+            <div class="tech-flip-inner">
+              <div class="tech-flip-face tech-flip-front floating-shell">
+                <span class="tech-card-tag">04 · AUTO EXPORT</span>
+                <div class="tech-card-icon"><i class="fa-solid fa-file-export"></i></div>
+                <h3>Xuất Báo Cáo Tự Động</h3>
+                <p>Tải ngay Excel sạch, Excel tổng hợp, Báo cáo Word (.docx) &amp; HTML.</p>
+                <span class="tech-flip-hint">Chạm để lật mặt sau ↻</span>
+              </div>
+              <div class="tech-flip-face tech-flip-back">
+                <span class="tech-card-tag !bg-white/20 !text-white">EXPORTERS</span>
+                <h4>Định dạng sẵn sàng trình bày</h4>
+                <ul>
+                  <li>✓ Báo cáo Word kèm bảng &amp; nhận định chi tiết</li>
+                  <li>✓ Dashboard HTML độc lập mở mọi trình duyệt</li>
+                  <li>✓ Audit Log JSON minh bạch từng bước</li>
+                </ul>
+                <span class="tech-flip-hint !text-pink-100">Chạm để lật lại ↺</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="tech-flip-card" data-tilt-3d data-flip-card>
+            <div class="tech-flip-inner">
+              <div class="tech-flip-face tech-flip-front floating-shell">
+                <span class="tech-card-tag">05 · ADMIN &amp; SECURITY</span>
+                <div class="tech-card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Bảo Mật &amp; Admin Riêng</h3>
+                <p>Phân quyền User/Admin, khóa tài khoản, thống kê Chart.js thời gian thực.</p>
+                <span class="tech-flip-hint">Chạm để lật mặt sau ↻</span>
+              </div>
+              <div class="tech-flip-face tech-flip-back">
+                <span class="tech-card-tag !bg-white/20 !text-white">SECURITY</span>
+                <h4>Kiểm soát truy cập chặt chẽ</h4>
+                <ul>
+                  <li>✓ 1 SĐT = 1 Tài khoản, tên không trùng lặp</li>
+                  <li>✓ Khôi phục mật khẩu qua mã OTP SĐT</li>
+                  <li>✓ Trang /admin riêng chỉ chủ sở hữu vào được</li>
+                </ul>
+                <span class="tech-flip-hint !text-pink-100">Chạm để lật lại ↺</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="techCarouselDots" class="flex justify-center gap-1.5 pt-1"></div>
       </div>
 
       <!-- Quy trình hoạt động (bám theo sơ đồ: gửi → nhận → làm sạch → xuất) -->
@@ -779,33 +1004,32 @@
     <!-- =================================================================== -->
     <!-- SCENE 1: MỜI BẠN GỬI FILE / SHEET LÊN                               -->
     <!-- =================================================================== -->
-    <section id="scene1" class="spatial-scene w-full max-w-4xl py-4 items-center justify-center">
-      <div class="floating-shell w-full rounded-[36px] p-6 sm:p-8 space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/75 pb-4">
-          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800">Mời bạn gửi dữ liệu cho Hà Thuỳ Dương phân tích
-          </h2>
+    <section id="scene1" class="spatial-scene w-full max-w-6xl mx-auto py-1 items-center justify-center">
+      <div class="floating-shell w-full rounded-[32px] p-4 sm:p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/75 pb-2.5">
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-800">📤 Gửi dữ liệu cho Hà Thuỳ Dương phân tích</h2>
           <button onclick="clearAllInputs()"
-            class="cute-btn px-3.5 py-1.5 bg-white/80 text-pink-700 border border-white rounded-xl text-xs font-extrabold">↺
+            class="cute-btn px-3 py-1 bg-white/80 text-pink-700 border border-white rounded-xl text-xs font-extrabold">↺
             Xóa &amp; Gửi lại</button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch">
           <!-- Left: Crystal Glass Upload Zone -->
-          <div class="md:col-span-7 cute-card-cream rounded-3xl p-5 space-y-4">
+          <div class="lg:col-span-5 cute-card-cream rounded-3xl p-4 space-y-3 flex flex-col justify-between">
             <div
               class="grid grid-cols-3 gap-1.5 bg-white/55 p-1 rounded-2xl border border-white text-[11px] font-extrabold">
               <button type="button" onclick="switchInputSource('file')" id="btnSrcFile"
-                class="cute-btn py-2 rounded-xl bg-white/95 text-pink-700">📁 Excel / Word</button>
+                class="cute-btn py-1.5 rounded-xl bg-white/95 text-pink-700">📁 Excel / Word</button>
               <button type="button" onclick="switchInputSource('gsheet')" id="btnSrcGsheet"
-                class="cute-btn py-2 rounded-xl text-slate-500">🔗 Google Sheet</button>
+                class="cute-btn py-1.5 rounded-xl text-slate-500">🔗 Google Sheet</button>
               <button type="button" onclick="switchInputSource('lark')" id="btnSrcLark"
-                class="cute-btn py-2 rounded-xl text-slate-500">🔷 Lark Base</button>
+                class="cute-btn py-1.5 rounded-xl text-slate-500">🔷 Lark Base</button>
             </div>
 
             <!-- File Dropzone -->
-            <div id="inputPaneFile" class="space-y-3">
+            <div id="inputPaneFile" class="space-y-2">
               <label id="dropZone" for="fileUploadInput"
-                class="ios-bubble-icon crystal-dropzone block border-2 border-dashed border-pink-300/90 rounded-3xl p-6 text-center space-y-2.5 cursor-pointer transition">
+                class="ios-bubble-icon crystal-dropzone block border-2 border-dashed border-pink-300/90 rounded-2xl p-4 text-center space-y-1.5 cursor-pointer transition">
                 <div
                   class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-pink-400 to-orange-300 text-white flex items-center justify-center text-xl shadow-md">
                   <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -865,11 +1089,11 @@
             </div>
           </div>
 
-          <!-- Right: Sample Shortcuts + Desired Output Choice -->
-          <div class="md:col-span-5 space-y-4">
-            <div class="cute-card rounded-3xl p-4 space-y-2.5">
+          <!-- Right: Sample Shortcuts + Desired Output Choice (2-col compact for 1-screen fit) -->
+          <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+            <div class="cute-card rounded-3xl p-3.5 space-y-2">
               <div class="text-[11px] font-extrabold text-pink-800 uppercase">Hoặc dùng bộ dữ liệu mẫu</div>
-              <div class="grid grid-cols-1 gap-2">
+              <div class="grid grid-cols-1 gap-1.5">
                 <button onclick="loadSampleDataset(1)" id="btnSample1"
                   class="cute-btn ios-bubble-icon px-3.5 py-2.5 rounded-2xl text-left flex items-center justify-between text-xs font-extrabold text-pink-800">
                   <span>🌸 Mẫu 1 · Đầy đủ</span><i class="fa-solid fa-play text-[10px]"></i>
@@ -1174,12 +1398,27 @@
 
       <!-- Main Result Canvas -->
       <div class="flex-1 min-w-0 w-full flex flex-col py-1">
-        <!-- Output Mode Switcher Banner (4 Deliverables of Stage 7) -->
+        <!-- DataLens Studio 4-Step Pipeline Stepper Bar -->
+        <div id="studioStepperBar"
+          class="mb-3 px-4 py-2.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white shadow-sm flex flex-wrap items-center justify-between gap-2 no-print text-[11px] font-extrabold">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span id="stepperPill1" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">✓ 1. Kết nối</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+            <span id="stepperPill2" class="px-2.5 py-1 rounded-full bg-pink-500 text-white shadow-sm">2. Làm sạch</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+            <span id="stepperPill3" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">🔒 3. Phân tích</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+            <span id="stepperPill4" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">🔒 4. Báo cáo</span>
+          </div>
+          <span id="stepperStatusText" class="text-pink-700 font-bold">Đang ở Bước 2: Vui lòng kiểm tra &amp; duyệt làm sạch</span>
+        </div>
+
+        <!-- Output Mode Switcher Banner (4 Deliverables of Stage 7 - Unlocked at Step 4) -->
         <div id="outputReadyBanner"
           class="hidden mb-2 px-4 py-2 rounded-2xl bg-emerald-50/85 backdrop-blur-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-2 shrink-0 no-print">
           <div class="flex items-center space-x-2 text-xs font-extrabold text-emerald-800">
             <i class="fa-solid fa-circle-check text-emerald-500"></i>
-            <span>Hà Thuỳ Dương đã hoàn tất 7 giai đoạn · Bàn giao 4 sản phẩm:</span>
+            <span>Bước 4 / 4 đã mở khóa · Xuất tệp đa định dạng (Word, Excel, HTML):</span>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
             <button onclick="exportCleanedExcel()"
@@ -1291,7 +1530,8 @@
                 <div
                   class="bg-white/60 px-4 py-3 border-b border-white/80 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h3 class="font-extrabold text-slate-800 text-sm">📊 Dashboard KPI Kinh doanh · Hà Thuỳ Dương</h3>
+                    <span class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-[10px] font-extrabold">BƯỚC 3 / 4 · FULL-SCREEN DASHBOARD</span>
+                    <h3 id="dashMainTitle" class="font-extrabold text-slate-800 text-sm mt-1">📊 Dashboard KPI Kinh doanh · Hà Thuỳ Dương</h3>
                     <div id="dashSubtitle" class="text-[11px] font-semibold text-slate-500">Tổng hợp số liệu đã làm sạch
                     </div>
                   </div>
@@ -1300,7 +1540,20 @@
                       class="cute-input px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700"></select>
                     <select id="dashPeriodSelect" onchange="renderDashboardKpiView()"
                       class="cute-input px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 hidden"></select>
+                    <button type="button" onclick="editDashboardTitlePrompt()"
+                      class="cute-btn px-2.5 py-1.5 bg-white/90 text-pink-700 border border-pink-200 rounded-xl text-[11px] font-extrabold">✏️ Chỉnh tiêu đề</button>
+                    <button type="button" onclick="renderDashboardKpiView(); showToast('Đã cập nhật lại Dashboard!')"
+                      class="cute-btn px-2.5 py-1.5 bg-pink-500 text-white rounded-xl text-[11px] font-extrabold">↻ Cập nhật</button>
                   </div>
+                </div>
+                <!-- Inline Frosted Title & Summary Editor -->
+                <div id="dashTitleEditor" class="hidden px-4 py-3 bg-pink-50/85 border-b border-pink-100 flex flex-wrap items-center gap-2 text-xs">
+                  <input id="dashEditTitleInput" type="text" placeholder="Tiêu đề Dashboard & Báo cáo..."
+                    class="cute-input flex-1 min-w-[200px] px-3 py-1.5 rounded-xl font-bold" />
+                  <input id="dashEditSummaryInput" type="text" placeholder="Tóm tắt ngắn gọn..."
+                    class="cute-input flex-1 min-w-[200px] px-3 py-1.5 rounded-xl font-semibold" />
+                  <button type="button" onclick="saveDashboardTitleEdit()" class="cute-btn px-3.5 py-1.5 bg-pink-500 text-white rounded-xl font-extrabold">Lưu ✓</button>
+                  <button type="button" onclick="editDashboardTitlePrompt(false)" class="cute-btn px-3 py-1.5 bg-white border border-pink-200 text-slate-600 rounded-xl font-bold">Đóng</button>
                 </div>
                 <div class="p-4 space-y-4 bg-white/35">
                   <div id="dash4KpisGrid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
@@ -1490,6 +1743,21 @@
             <div id="locationDetailWrapper" class="hidden">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="locationDetailCards"></div>
             </div>
+
+            <!-- CỔNG DUYỆT BƯỚC 3 -> BƯỚC 4 (XUẤT BÁO CÁO) -->
+            <div id="step3ApproveBox" class="hidden cute-card p-5 rounded-3xl border-2 border-pink-300/90 bg-gradient-to-r from-pink-50/90 to-orange-50/90 space-y-3 no-print">
+              <div class="flex items-start gap-3">
+                <span class="w-9 h-9 rounded-2xl bg-pink-500 text-white flex items-center justify-center shrink-0 font-black text-sm">3</span>
+                <div class="space-y-1 flex-1">
+                  <div class="text-xs font-extrabold text-pink-900">🤖 DataLens Studio Agent · Xác nhận Bước 3 / 4</div>
+                  <p class="text-xs font-semibold text-slate-700 leading-relaxed">Bạn xem trang phân tích và các đề xuất hành động này đã ổn chưa? Nếu đồng ý, hãy xác nhận để tôi chuyển sang <strong>Bước 4 xuất file báo cáo đầy đủ (Word, Excel, HTML)</strong> cho bạn!</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap justify-end gap-2">
+                <button type="button" onclick="editDashboardTitlePrompt()" class="cute-btn px-4 py-2 bg-white border border-pink-200 text-pink-700 rounded-2xl text-xs font-extrabold">✏️ Chỉnh tiêu đề &amp; tóm tắt</button>
+                <button type="button" onclick="approveStep3()" class="cta-primary !px-6 !py-2.5 !text-xs">✓ Duyệt bước này (Mở Bước 4 · Xuất Báo cáo) →</button>
+              </div>
+            </div>
           </div>
 
           <!-- TAB 2: REPORT & SURVEY -->
@@ -1555,6 +1823,8 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <select id="cleanDatasetSelect" onchange="renderCleanPreviewTable()"
                     class="cute-input px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700"></select>
+                  <select id="cleanPeriodFilterSelect" onchange="renderCleanPreviewTable()"
+                    class="cute-input px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 hidden"></select>
                   <button type="button" onclick="reRunWithCleaningRules()"
                     class="cute-btn px-3 py-1.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white border border-white/70 rounded-xl text-[11px] font-extrabold">↺
                     Áp dụng quy tắc</button>
@@ -1613,6 +1883,24 @@
                         class="bg-pink-50/90 text-pink-900 font-extrabold sticky top-0"></thead>
                       <tbody id="cleanedPreviewTableBody" class="divide-y divide-pink-50"></tbody>
                     </table>
+                  </div>
+                </div>
+
+                <!-- Phân bố, độ phủ & Thống kê từng cột ngay tại Bước 2 -->
+                <div id="step2BreakdownBox" class="space-y-3"></div>
+
+                <!-- CỔNG DUYỆT BƯỚC 2 -> BƯỚC 3 (PHÂN TÍCH CHUYÊN SÂU) -->
+                <div id="step2ApproveBox" class="p-4 rounded-3xl border-2 border-pink-300 bg-gradient-to-r from-pink-50/95 to-orange-50/90 space-y-3 no-print">
+                  <div class="flex items-start gap-3">
+                    <span class="w-8 h-8 rounded-2xl bg-pink-500 text-white flex items-center justify-center shrink-0 font-black text-xs">2</span>
+                    <div class="space-y-1 flex-1">
+                      <div class="text-xs font-extrabold text-pink-900">🤖 DataLens Studio Agent · Xác nhận Bước 2 / 4</div>
+                      <p class="text-xs font-semibold text-slate-700 leading-relaxed">Dữ liệu đã được làm sạch và kiểm tra độ phủ như trên. Bạn hãy xem trước bảng số liệu, có thể chỉnh sửa lại ngày hoặc quy tắc làm sạch nếu cần. Nếu đã ổn, hãy bấm <strong>'Duyệt bước này'</strong> để tôi mở trang Phân tích chuyên sâu nhé!</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <button type="button" onclick="reRunWithCleaningRules()" class="cute-btn px-4 py-2 bg-white border border-pink-200 text-pink-700 rounded-2xl text-xs font-extrabold">↻ Làm sạch lại</button>
+                    <button type="button" onclick="approveStep2()" class="cta-primary !px-6 !py-2.5 !text-xs">✓ Duyệt bước này (Mở Bước 3 · Phân tích chuyên sâu) →</button>
                   </div>
                 </div>
               </div>
@@ -2041,8 +2329,8 @@
     </div>
   </div>
 
-  <script src="/app.js"></script>
-  <script src="/site.js"></script>
+  <script src="/app.js?v=20261116g"></script>
+  <script src="/site.js?v=20261116g"></script>
 </body>
 
 </html>
